@@ -21,7 +21,7 @@ const sass = require('gulp-sass');							// 处理sass
 
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
-const babel = require('gulp-babel');						// babel
+const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
 const jshint = require('gulp-jshint');						// jshint
 const uglify = require('gulp-uglify');						// 混淆工具
 const concat = require('gulp-concat');						// js文件合并
