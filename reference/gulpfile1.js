@@ -1,27 +1,29 @@
-'use strict';
-var gulp = require('gulp');
-var uglify = require('gulp-uglify');
-var group = require('gulp-group-files');
-var transport = require('gulp-seajs-transport');
-var gulpSequence = require('gulp-sequence');
-var sass = require('gulp-sass');
-var spriter = require('gulp-css-spriter');  //雪碧图
-var px3rem = require("gulp-px3rem");
-var minifycss = require('gulp-minify-css');
-var rev = require('gulp-rev');                                  //- 对文件名加MD5后缀
-var revCollector = require('gulp-rev-collector');               //- 路径替换
-var imagemin = require('gulp-imagemin');
-var base64 = require('gulp-base64');
-var htmlmin = require('gulp-htmlmin');
-var browserSync = require('browser-sync');
-var del = require('del');
-var nodemon = require('gulp-nodemon');
-var concat = require('gulp-concat');
-var gulpCopy = require('gulp-file-copy');
-var livereload = require('gulp-livereload');
-var assetRev = require('gulp-asset-rev');
+const gulp = require('gulp');
+const uglify = require('gulp-uglify');
+const group = require('gulp-group-files');
+const transport = require('gulp-seajs-transport');
+const gulpSequence = require('gulp-sequence');
+const sass = require('gulp-sass');
+const spriter = require('gulp-css-spriter');  //雪碧图
+const px3rem = require("gulp-px3rem");
+const minifycss = require('gulp-minify-css');
+const rev = require('gulp-rev');                                  //- 对文件名加MD5后缀
+const revCollector = require('gulp-rev-collector');               //- 路径替换
+const imagemin = require('gulp-imagemin');
+const base64 = require('gulp-base64');
+const htmlmin = require('gulp-htmlmin');
+const browserSync = require('browser-sync');
+const del = require('del');
+const nodemon = require('gulp-nodemon');
+const concat = require('gulp-concat');
+const gulpCopy = require('gulp-file-copy');
+const livereload = require('gulp-livereload');
+const assetRev = require('gulp-asset-rev');
 
 
+
+
+// 这块主要就是用来处理 require/sea 模块化的，完全可以用ES6+babel代替
 var jsFiles = {
     "index" : {
         src: ['src/public/js/a.js','src/public/js/b.js','src/public/js/index.js'],
