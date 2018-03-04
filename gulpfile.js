@@ -35,7 +35,8 @@ const clean = require('gulp-clean');
 const sourcemaps = require('gulp-sourcemaps');
 
 /* server服务 ---------------------------------------------------------------------------------------------- */
-const nodemon = require('gulp-nodemon');
+const connect = require('gulp-connect');					// 静态web的服务
+const nodemon = require('gulp-nodemon');					// nodemon，启动node服务
 
 /* 热更新 -------------------------------------------------------------------------------------------------- */
 const browserSync = require('browser-sync');
@@ -43,42 +44,49 @@ const browserSync = require('browser-sync');
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const pump = require('pump');								// 任务流处理，详见 https://github.com/mafintosh/pump
+// const open = require('open');							// 打开浏览器
 
 
 
-const CONFIG = {
-	serverPath: '',											// 服务路径
+
+
+
+
+
+
+const COMMON_CONFIG = {
+	need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
+	source_maps: {											// 是否需要生成map映射文件
+		js_map: true,
+		style_map: true
+	}
+};
+const PATH_CONFIG = {
+	serverPath: 'server/',									// 服务路径
 	libPath: '',											// 依赖库路径
-	srcPath: '',											// 源码路径
-	devPath: '',											// 开发环境
-	prdPath: ''												// 生产环境
+	srcPath: 'src/',										// 源码路径
+	devPath: 'build',										// 开发环境
+	prdPath: 'dist',										// 生产环境
+	stylePath: {
+		sassEntry: 'style/sass/index.scss'					// sass入口文件
+	}
 };
 const TASK = {
-	CLEAN: {
-		main: '',											// 清空文件【主任务】
-	},
-	BUILD: {
-		main: '',
-	},
-	HTML: {
-		main: '',											
-	},
+	CLEAN: 'clean',
+	BUILD: 'build',
+	HTML: 'html',
+	SERVER: 'server',
+	WATCH: 'watch',
 	STYLE: {
-		main: '',
+		main: 'style',
 		sass: 'sass',										// sass编译
 		less: 'less',										// less编译
 		stylus: 'stylus',									// stylus编译
 	},
 	SCRIPT: {
-		main: '',
+		main: 'js',
 		jsUglify: 'uglify',									// JS混淆
 		jsConcat: 'concat',									// JS文件合并
-	},
-	SERVER: {
-		main: '',
-	}
-	WATCH: {
-		main: '',
 	}
 }
 
@@ -91,26 +99,36 @@ const TASK = {
 
 
 
-
+let { serverPath, srcPath, devPath, prdPath, stylePath } = PATH_CONFIG;
 
 
 /* build 文件打包任务 ------------------------------------------------------------------------------------- */
-gulp.task(TASK.BUILD.main, () => {});
+gulp.task(TASK.BUILD, () => {});
 
 /* clean 文件清除任务 ------------------------------------------------------------------------------------- */
-gulp.task(TASK.CLEAN.main, () => {});
+gulp.task(TASK.CLEAN, () => {});
 
 /* html 任务 ---------------------------------------------------------------------------------------------- */
-gulp.task(TASK.HTML.main, () => {});
+gulp.task(TASK.HTML, () => {
+	gulp.src(`${srcPath}**/*.html`)
+		.pipe(gulp.dest(`${devPath}`))
+		.pipe(gulp.dest(`${prdPath}`));
+});
 
 /* style 任务 --------------------------------------------------------------------------------------------- */
-gulp.task(TASK.STYLE.main, () => {});
+gulp.task(TASK.STYLE.main, () => {
+	gulp.src(`${srcPath}/${stylePath.sassEntry}`)
+		.pipe(sass().on('error', sass.logError))
+		.pipe(gulp.dest(`${devPath}`))
+		.pipe(gulp.cssmin())
+		.pipe(gulp.dest(`${prdPath}`));
+});
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
 gulp.task(TASK.SCRIPT.main, () => {});
 
 /* watch 监听任务 ----------------------------------------------------------------------------------------- */
-gulp.task(TASK.WATCH.main, () => {});
+gulp.task(TASK.WATCH, () => {});
 
 /* 启动 server 任务 --------------------------------------------------------------------------------------- */
-gulp.task(TASK.SERVER.main, () => {});
+gulp.task(TASK.SERVER, () => {});
