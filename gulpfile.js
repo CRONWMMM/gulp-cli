@@ -21,8 +21,8 @@ const sass = require('gulp-sass');							// 处理sass
 
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
-const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
-const jshint = require('gulp-jshint');						// jshint
+// const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
+// const jshint = require('gulp-jshint');					// jshint
 const uglify = require('gulp-uglify');						// 混淆工具
 const concat = require('gulp-concat');						// js文件合并
 
@@ -52,8 +52,6 @@ const pump = require('pump');								// 任务流处理，详见 https://github.
 
 
 
-
-
 const COMMON_CONFIG = {
 	need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
 	random_file_name: true,									// 是否需要随机文件名
@@ -66,15 +64,19 @@ const PATH_CONFIG = {
 	serverPath: 'server/',									// 服务路径
 	libPath: '',											// 依赖库路径
 	srcPath: 'src/',										// 源码路径
-	devPath: 'build',										// 开发环境
-	prdPath: 'dist',										// 生产环境
+	devPath: 'build/',										// 开发环境
+	prdPath: 'dist/',										// 生产环境
 	stylePath: {
-		sassEntry: 'style/sass/index.scss'					// sass入口文件
+		sassEntry: 'style/sass/index.scss',					// sass入口文件
+		lessEntry: 'style/less/index.less',
+		stylusEntry: '',
+		outputFolder: 'css'									// css的输出文件夹
 	},
-	revPath: {												// 随机文件名后生成的映射JSON地址（不使用随机文件名的情况下改配置不生效）
-		root: 'rev',										// 根目录
-		jsrev: 'rev/js',
-		cssrev: 'rev/css'
+	revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
+		fileName: 'rev-manifest.json',						// 生成的rev映射文件名
+		root: 'rev/',										// 根目录
+		jsrev: 'rev/jsrev',
+		cssrev: 'rev/cssrev'
 	}
 };
 const TASK = {
@@ -84,7 +86,7 @@ const TASK = {
 	SERVER: 'server',
 	WATCH: 'watch',
 	STYLE: {
-		main: 'style',
+		main: 'css',
 		sass: 'sass',										// sass编译
 		less: 'less',										// less编译
 		stylus: 'stylus',									// stylus编译
@@ -125,14 +127,14 @@ gulp.task(TASK.CLEAN, () => {
 
 /* style 任务 --------------------------------------------------------------------------------------------- */
 gulp.task(TASK.STYLE.sass, [TASK.CLEAN], () => {
-	return gulp.src(`${srcPath}/${stylePath.sassEntry}`)
+	return gulp.src(`${srcPath}${stylePath.sassEntry}`)
 			   .pipe(sass().on('error', sass.logError))
-			   .pipe(gulp.dest(`${devPath}`))
+			   .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`))
 });
 
 gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
-	return gulp.src(`${devPath}/**/*.css`)
-			   .pipe(gulp.cssmin())
+	return gulp.src(`${devPath}**/*.css`)
+			   .pipe(cssmin())
 			   .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
 			   .pipe(gulp.dest(`${prdPath}`))
 			   .pipe(rev.manifest())	// 生成JSON的映射表
@@ -151,7 +153,7 @@ gulp.task(TASK.SCRIPT.main, [TASK.CLEAN,], () => {});
 
 /* html 任务 ---------------------------------------------------------------------------------------------- */
 gulp.task(TASK.HTML, [TASK.STYLE.main, TASK.SCRIPT.main], () => {
-	gulp.src([`${revPath.root}/**/*.json`, `${srcPath}**/*.html`])
+	gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
 		.pipe(gulp.dest(`${devPath}`))	// 开发环境就不需要MD5随机文件名了
 		.pipe(revCollector())	// 替换静态资源MD5文件名
 		.pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
