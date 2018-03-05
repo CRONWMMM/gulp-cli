@@ -56,6 +56,7 @@ const pump = require('pump');								// 任务流处理，详见 https://github.
 
 const COMMON_CONFIG = {
 	need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
+	random_file_name: true,									// 是否需要随机文件名
 	source_maps: {											// 是否需要生成map映射文件
 		js_map: true,
 		style_map: true
@@ -69,6 +70,10 @@ const PATH_CONFIG = {
 	prdPath: 'dist',										// 生产环境
 	stylePath: {
 		sassEntry: 'style/sass/index.scss'					// sass入口文件
+	},
+	revPath: {												// 随机文件名后生成的映射JSON地址（不使用随机文件名的情况下改配置不生效）
+		jsrev: 'rev/js',
+		cssrev: 'rev/css'
 	}
 };
 const TASK = {
@@ -99,7 +104,7 @@ const TASK = {
 
 
 
-let { serverPath, srcPath, devPath, prdPath, stylePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, revPath } = PATH_CONFIG;
 
 
 /* build 文件打包任务 ------------------------------------------------------------------------------------- */
@@ -121,7 +126,10 @@ gulp.task(TASK.STYLE.main, () => {
 		.pipe(sass().on('error', sass.logError))
 		.pipe(gulp.dest(`${devPath}`))
 		.pipe(gulp.cssmin())
-		.pipe(gulp.dest(`${prdPath}`));
+		.pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
+		.pipe(gulp.dest(`${prdPath}`))
+		.pipe(rev.manifest())	// 生成JSON的映射表
+		.pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
 });
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
