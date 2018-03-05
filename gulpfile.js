@@ -72,6 +72,7 @@ const PATH_CONFIG = {
 		sassEntry: 'style/sass/index.scss'					// sass入口文件
 	},
 	revPath: {												// 随机文件名后生成的映射JSON地址（不使用随机文件名的情况下改配置不生效）
+		root: 'rev',										// 根目录
 		jsrev: 'rev/js',
 		cssrev: 'rev/css'
 	}
@@ -110,33 +111,61 @@ const { serverPath, srcPath, devPath, prdPath, stylePath, revPath } = PATH_CONFI
 /* build 文件打包任务 ------------------------------------------------------------------------------------- */
 gulp.task(TASK.BUILD, () => {});
 
-/* clean 文件清除任务 ------------------------------------------------------------------------------------- */
-gulp.task(TASK.CLEAN, () => {});
 
-/* html 任务 ---------------------------------------------------------------------------------------------- */
-gulp.task(TASK.HTML, () => {
-	gulp.src(`${srcPath}**/*.html`)
-		.pipe(gulp.dest(`${devPath}`))
-		.pipe(gulp.dest(`${prdPath}`));
+
+
+/* clean 文件清除任务 ------------------------------------------------------------------------------------- */
+gulp.task(TASK.CLEAN, () => {
+	return gulp.src([], {read: false})
+			   .pipe(clean());
 });
+
+
+
 
 /* style 任务 --------------------------------------------------------------------------------------------- */
-gulp.task(TASK.STYLE.main, () => {
-	gulp.src(`${srcPath}/${stylePath.sassEntry}`)
-		.pipe(sass().on('error', sass.logError))
-		.pipe(gulp.dest(`${devPath}`))
-		.pipe(gulp.cssmin())
-		.pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-		.pipe(gulp.dest(`${prdPath}`))
-		.pipe(rev.manifest())	// 生成JSON的映射表
-		.pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
+gulp.task(TASK.STYLE.sass, [TASK.CLEAN], () => {
+	return gulp.src(`${srcPath}/${stylePath.sassEntry}`)
+			   .pipe(sass().on('error', sass.logError))
+			   .pipe(gulp.dest(`${devPath}`))
 });
 
+gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
+	return gulp.src(`${devPath}/**/*.css`)
+			   .pipe(gulp.cssmin())
+			   .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
+			   .pipe(gulp.dest(`${prdPath}`))
+			   .pipe(rev.manifest())	// 生成JSON的映射表
+			   .pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
+});
+
+
+
+
+
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
-gulp.task(TASK.SCRIPT.main, () => {});
+gulp.task(TASK.SCRIPT.main, [TASK.CLEAN,], () => {});
+
+
+
+
+/* html 任务 ---------------------------------------------------------------------------------------------- */
+gulp.task(TASK.HTML, [TASK.STYLE.main, TASK.SCRIPT.main], () => {
+	gulp.src([`${revPath.root}/**/*.json`, `${srcPath}**/*.html`])
+		.pipe(gulp.dest(`${devPath}`))	// 开发环境就不需要MD5随机文件名了
+		.pipe(revCollector())	// 替换静态资源MD5文件名
+		.pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
+});
+
+
+
 
 /* watch 监听任务 ----------------------------------------------------------------------------------------- */
 gulp.task(TASK.WATCH, () => {});
+
+
+
+
 
 /* 启动 server 任务 --------------------------------------------------------------------------------------- */
 gulp.task(TASK.SERVER, () => {});
