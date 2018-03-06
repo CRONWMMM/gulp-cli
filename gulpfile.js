@@ -21,7 +21,7 @@ const sass = require('gulp-sass');							// 处理sass
 
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
-// const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
+const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
 // const jshint = require('gulp-jshint');					// jshint
 const uglify = require('gulp-uglify');						// 混淆工具
 const concat = require('gulp-concat');						// js文件合并
@@ -72,6 +72,9 @@ const PATH_CONFIG = {
 		stylusEntry: '',
 		outputFolder: 'css'									// css的输出文件夹
 	},
+	scriptPath: {
+		mainEntry: ''
+	},
 	revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
 		fileName: 'rev-manifest.json',						// 生成的rev映射文件名
 		root: 'rev/',										// 根目录
@@ -97,9 +100,6 @@ const TASK = {
 		jsConcat: 'concat',									// JS文件合并
 	}
 }
-
-
-
 
 
 
@@ -137,7 +137,7 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 			   .pipe(cssmin())
 			   .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
 			   .pipe(gulp.dest(`${prdPath}`))
-			   .pipe(rev.manifest())	// 生成JSON的映射表
+			   .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
 			   .pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
 });
 
@@ -146,15 +146,26 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
-gulp.task(TASK.SCRIPT.main, [TASK.CLEAN,], () => {});
+gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
+	return gulp.src(`${srcPath}**/*.js`)
+			   .pipe(babel({
+			   		presets: ['env'],
+			   		plugins: ['transform-runtime']
+			   }))
+			   .pipe(gulp.dest(`${devPath}`))
+});
 
 
 
 
 /* html 任务 ---------------------------------------------------------------------------------------------- */
 gulp.task(TASK.HTML, [TASK.STYLE.main, TASK.SCRIPT.main], () => {
+	// 这块有坑，分两步，先生成一份html文件到生产环境，开发环境需要rev映射文件名的另写，如果把复制html文件到生产环境的操作
+	// 和开发环境混写，会生成无用的rev映射
+	gulp.src(`${srcPath}**/*.html`)
+		.pipe(gulp.dest(`${devPath}`));	// 开发环境就不需要MD5随机文件名了
+
 	gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
-		.pipe(gulp.dest(`${devPath}`))	// 开发环境就不需要MD5随机文件名了
 		.pipe(revCollector())	// 替换静态资源MD5文件名
 		.pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
 });
