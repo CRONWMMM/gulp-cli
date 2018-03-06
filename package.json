@@ -1,4 +1,10 @@
 {
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development gulp server",
+    "pm2": "cross-env NODE_ENV=production pm2 start bin/www",
+    "prd": "cross-env NODE_ENV=production node bin/www",
+    "build": "gulp build"
+  },
   "devDependencies": {
     "browser-sync": "^2.23.6",
     "gulp": "^3.9.1",
