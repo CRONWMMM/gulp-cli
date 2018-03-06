@@ -22,6 +22,7 @@ const sass = require('gulp-sass');							// 处理sass
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
 const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
+const browserify = require('browserify');					// babel编译完之后使用了CommonJs的require语法来引用外部模块，所以需要再用browserify做一层转译
 // const jshint = require('gulp-jshint');					// jshint
 const uglify = require('gulp-uglify');						// 混淆工具
 const concat = require('gulp-concat');						// js文件合并
@@ -44,6 +45,10 @@ const browserSync = require('browser-sync');
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const pump = require('pump');								// 任务流处理，详见 https://github.com/mafintosh/pump
+const globby = require('globby');							// 似乎是类似于gulp的一种生成任务流的模块，gulp-babel + browserify 编译ES6时使用
+const through = require('through2');						// 同上
+const source = require('vinyl-source-stream');
+const buffer = require('vinyl-buffer');
 // const open = require('open');							// 打开浏览器
 
 
@@ -147,12 +152,36 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
 gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
-	return gulp.src(`${srcPath}**/*.js`)
-			   .pipe(babel({
-			   		presets: ['env'],
-			   		plugins: ['transform-runtime']
-			   }))
-			   .pipe(gulp.dest(`${devPath}`))
+	let bundledStream = through();		// https://www.gulpjs.com.cn/docs/recipes/browserify-with-globs/
+	bundledStream
+	.pipe(source(`${srcPath}**/*.js`))
+	.pipe(babel({
+		presets: ['env'],
+		plugins: ['transform-runtime']
+	}))
+	.pipe(gulp.dest(`${devPath}`))
+
+	globby([`${srcPath}js/entries/*.js`], (err, entries) => {
+		// 确保任何从 globby 发生的错误都被捕获到
+	    if (err) {
+	      bundledStream.emit('error', err);
+	      return;
+	    }
+	    // 创建 Browserify 实例
+	    let b = browserify({
+	    	entries: entries
+	    });
+	    b.bundle().pipe(bundledStream);
+    });
+
+	return bundledStream;
+
+	// return gulp.src(`${srcPath}**/*.js`)
+	// 		   .pipe(babel({	// 先用babel转译
+	// 		   		presets: ['env'],
+	// 		   		plugins: ['transform-runtime']
+	// 		   }))
+	// 		   .pipe(gulp.dest(`${devPath}`))
 });
 
 
