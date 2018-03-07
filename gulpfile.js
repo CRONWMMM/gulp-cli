@@ -1,3 +1,22 @@
+/**
+ *
+ * author: CRONWMMM
+ * 
+ * 
+ * 相关参考文件：
+ *
+ * 1.https://segmentfault.com/a/1190000004915222 	【Gulp资料大全 入门、插件、脚手架、包清单】
+ * 2.https://segmentfault.com/a/1190000009467932 	【Gulp.src排除一些文件的路径规则】
+ * 3.https://csspod.com/using-browserify-with-gulp/	【在 Gulp 中使用 Browserify】
+ * 4.https://segmentfault.com/a/1190000004917668	【基于 Gulp + Browserify 构建 ES6 环境下的自动化前端项目】
+ *
+ *
+ *
+ *
+ *
+ */
+
+
 const gulp = require('gulp');
 
 /* 文件名重命名处理，主要解决文件缓存 ---------------------------------------------------------------------- */
@@ -46,9 +65,11 @@ const browserSync = require('browser-sync');
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const pump = require('pump');								// 任务流处理，详见 https://github.com/mafintosh/pump
 const globby = require('globby');							// 似乎是类似于gulp的一种生成任务流的模块，gulp-babel + browserify 编译ES6时使用
-const through = require('through2');						// 同上
-const source = require('vinyl-source-stream');
-const buffer = require('vinyl-buffer');
+const through2 = require('through2');						// 同上
+const source = require('vinyl-source-stream');				// 将常规流转换为包含 Stream 的 vinyl 对象
+const buffer = require('vinyl-buffer');						// 将 vinyl 对象内容中的 Stream 转换为 Buffer。
+const watchify = require('watchify');
+const standalonify = require('standalonify');				// browserify插件，作用就是通用模块解析器【支持AMD/CMD】
 // const open = require('open');							// 打开浏览器
 
 
@@ -152,36 +173,34 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
 gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
-	let bundledStream = through();		// https://www.gulpjs.com.cn/docs/recipes/browserify-with-globs/
-	bundledStream
-	.pipe(source(`${srcPath}**/*.js`))
-	.pipe(babel({
-		presets: ['env'],
-		plugins: ['transform-runtime']
-	}))
-	.pipe(gulp.dest(`${devPath}`))
 
-	globby([`${srcPath}js/entries/*.js`], (err, entries) => {
-		// 确保任何从 globby 发生的错误都被捕获到
-	    if (err) {
-	      bundledStream.emit('error', err);
-	      return;
-	    }
-	    // 创建 Browserify 实例
-	    let b = browserify({
-	    	entries: entries
-	    });
-	    b.bundle().pipe(bundledStream);
-    });
+	return browserify({
+		entries: `${srcPath}js/vendors.js`  //指定打包入口文件
+	}).plugins(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
 
-	return bundledStream;
+	}).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
+		presets: [
+			// 'env',
+			'es2015',  //转换es6代码
+			'stage-0'  //指定转换es7代码的语法提案阶段
+		],
+		plugins: [
+			'transform-runtime'
+			// 'transform-object-assign',  //转换es6 Object.assign插件
+			// 'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
+			// ['transform-es2015-classes', { "loose": false }],  //转换es6 class插件
+			// ['transform-es2015-modules-commonjs', { "loose": false }]  //转换es6 module插件
+		],
+		.bundle()  //合并打包
+    })
 
-	// return gulp.src(`${srcPath}**/*.js`)
+	// return gulp.src([`${srcPath}**/*.js`, '!vendors.js'])
 	// 		   .pipe(babel({	// 先用babel转译
 	// 		   		presets: ['env'],
 	// 		   		plugins: ['transform-runtime']
 	// 		   }))
-	// 		   .pipe(gulp.dest(`${devPath}`))
+	// 		   .pipe(gulp.dest(`${devPath}`));
+	
 });
 
 
