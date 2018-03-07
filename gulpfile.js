@@ -70,6 +70,7 @@ const source = require('vinyl-source-stream');				// 将常规流转换为包含
 const buffer = require('vinyl-buffer');						// 将 vinyl 对象内容中的 Stream 转换为 Buffer。
 const watchify = require('watchify');
 const standalonify = require('standalonify');				// browserify插件，作用就是通用模块解析器【支持AMD/CMD】
+const babelify = require('babelify');
 // const open = require('open');							// 打开浏览器
 
 
@@ -175,31 +176,21 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
 
 	return browserify({
-		entries: `${srcPath}js/vendors.js`  //指定打包入口文件
-	}).plugins(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
-
+		entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
+	}).plugin(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
+		name: 'FlareJ'
 	}).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
 		presets: [
-			// 'env',
-			'es2015',  //转换es6代码
-			'stage-0'  //指定转换es7代码的语法提案阶段
+			'env'
 		],
 		plugins: [
 			'transform-runtime'
-			// 'transform-object-assign',  //转换es6 Object.assign插件
-			// 'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
-			// ['transform-es2015-classes', { "loose": false }],  //转换es6 class插件
-			// ['transform-es2015-modules-commonjs', { "loose": false }]  //转换es6 module插件
-		],
-		.bundle()  //合并打包
-    })
-
-	// return gulp.src([`${srcPath}**/*.js`, '!vendors.js'])
-	// 		   .pipe(babel({	// 先用babel转译
-	// 		   		presets: ['env'],
-	// 		   		plugins: ['transform-runtime']
-	// 		   }))
-	// 		   .pipe(gulp.dest(`${devPath}`));
+		]
+    }).bundle()  //合并打包
+	.pipe(source('vendors.js'))
+	.pipe(buffer())
+	.pipe(uglify())
+	.pipe(gulp.dest(`${devPath}`));
 	
 });
 
