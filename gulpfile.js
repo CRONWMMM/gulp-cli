@@ -1,19 +1,25 @@
 /**
  *
  * author: CRONWMMM
- * 
+ * github: https://github.com/CRONWMMM
  * 
  * 相关参考文件：
  *
- * 1.https://segmentfault.com/a/1190000004915222 	【Gulp资料大全 入门、插件、脚手架、包清单】
- * 2.https://segmentfault.com/a/1190000009467932 	【Gulp.src排除一些文件的路径规则】
- * 3.https://csspod.com/using-browserify-with-gulp/	【在 Gulp 中使用 Browserify】
- * 4.https://segmentfault.com/a/1190000004917668	【基于 Gulp + Browserify 构建 ES6 环境下的自动化前端项目】
- *
- *
- *
- *
- *
+ * 1.https://www.jianshu.com/p/9723ca2a2afd								【gulp 入门】
+ * 2.https://segmentfault.com/a/1190000004915222 						【Gulp资料大全 入门、插件、脚手架、包清单】
+ * 3.https://segmentfault.com/a/1190000009467932 						【Gulp.src排除一些文件的路径规则】
+ * 4.https://csspod.com/using-browserify-with-gulp/						【在 Gulp 中使用 Browserify】
+ * 5.https://segmentfault.com/a/1190000004917668						【基于 Gulp + Browserify 构建 ES6 环境下的自动化前端项目】
+ * 6.http://blog.csdn.net/yummy_go/article/details/51144506				【gulp前端构建工具知识点及深析】
+ * 7.https://www.jianshu.com/p/9724c47b406c								【gulp & webpack整合】
+ * 8.https://www.npmjs.com/package/gulp-webpack							【gulp-webpack npm介绍】
+ * 9.https://www.cnblogs.com/maskmtj/archive/2016/07/21/5597307.html 	【gulp + webpack构建配置】
+ * 10.http://blog.csdn.net/xiangzhihong8/article/details/53993980		【gulp + webpack 工具整合介绍】
+ * 11.http://blog.csdn.net/qq_16559905/article/details/79404173			【Webpack 3.X - 4.X 升级记录】
+ * 12.https://www.cnblogs.com/wonyun/p/6030090.html 					【html-webpack-plugin详解】
+ * 13.https://segmentfault.com/a/1190000007294861						【html-webpack-plugin用法全解】
+ * 14.http://blog.csdn.net/keliyxyz/article/details/51513114			【webpack入门（六）——html-webpack-plugin】
+ * 
  */
 
 
@@ -71,6 +77,8 @@ const buffer = require('vinyl-buffer');						// 将 vinyl 对象内容中的 Str
 const watchify = require('watchify');
 const standalonify = require('standalonify');				// browserify插件，作用就是通用模块解析器【支持AMD/CMD】
 const babelify = require('babelify');
+const webpack = require('webpack');							// webpack
+// const webpack = require('gulp-webpack');
 // const open = require('open');							// 打开浏览器
 
 
@@ -100,7 +108,7 @@ const PATH_CONFIG = {
 		outputFolder: 'css'									// css的输出文件夹
 	},
 	scriptPath: {
-		mainEntry: ''
+		mainEntry: 'js/main.js'
 	},
 	revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
 		fileName: 'rev-manifest.json',						// 生成的rev映射文件名
@@ -128,13 +136,15 @@ const TASK = {
 	}
 }
 
+// gulp不同环境命令，写在script里面
+// gulp serve --env production
+// gulp serve --env development	默认是development环境下
 
 
 
 
 
-
-const { serverPath, srcPath, devPath, prdPath, stylePath, revPath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath } = PATH_CONFIG;
 
 
 /* build 文件打包任务 ------------------------------------------------------------------------------------- */
@@ -145,7 +155,7 @@ gulp.task(TASK.BUILD, () => {});
 
 /* clean 文件清除任务 ------------------------------------------------------------------------------------- */
 gulp.task(TASK.CLEAN, () => {
-	return gulp.src([], {read: false})
+	return gulp.src([devPath, prdPath], {read: false})
 			   .pipe(clean());
 });
 
@@ -173,28 +183,58 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 
 
 /* JS 任务 ------------------------------------------------------------------------------------------------ */
-gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
-
-	return browserify({
-		entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
-	}).plugin(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
-		name: 'FlareJ'
-	}).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
-		presets: [
-			'env'
-		],
-		plugins: [
-			'transform-runtime'
-		]
-    }).bundle()  //合并打包
-	.pipe(source('vendors.js'))
-	.pipe(buffer())
-	.pipe(uglify())
-	.pipe(gulp.dest(`${devPath}`));
-	
-});
+		/* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是CMD模块，浏览器不能解析，遂卒 */
+		/*
+		gulp.task('js', () =>
+		    gulp.src(`${srcPath}js/entries/vendors.js`)
+		        .pipe(babel({
+		        	presets: ['env'],
+		            plugins: ['transform-runtime']
+		        }))
+		        .pipe(webpack())
+		        .pipe(gulp.dest(`${devPath}`))
+		);
+		*/
 
 
+		/* 第二版，用browserify，打包出来的文件贼鸡巴大，你感动吗？我不敢动不敢动。。。
+		gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
+
+			return browserify({
+				entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
+			}).plugin(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
+				name: 'FlareJ'
+			}).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
+				presets: [
+					'env'
+				],
+				plugins: [
+					'transform-runtime',
+					'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
+				]
+		    }).bundle()  //合并打包
+			.pipe(source('vendors.js'))
+			.pipe(buffer())
+			// .pipe(uglify())
+			.pipe(gulp.dest(`${devPath}`));
+			
+		});
+		*/
+
+		/* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
+		gulp.task('js', [TASK.STYLE.main], () => {
+			switch(process.env.NODE_ENV) {
+				case 'development':
+					webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+					break;
+				case 'production':
+					webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+					break;
+				default: 
+					webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+					break;
+			}
+		});
 
 
 /* html 任务 ---------------------------------------------------------------------------------------------- */
@@ -221,3 +261,5 @@ gulp.task(TASK.WATCH, () => {});
 
 /* 启动 server 任务 --------------------------------------------------------------------------------------- */
 gulp.task(TASK.SERVER, () => {});
+
+
