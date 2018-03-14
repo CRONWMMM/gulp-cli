@@ -69,17 +69,9 @@ const browserSync = require('browser-sync');
 
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
-const pump = require('pump');								// 任务流处理，详见 https://github.com/mafintosh/pump
-const globby = require('globby');							// 似乎是类似于gulp的一种生成任务流的模块，gulp-babel + browserify 编译ES6时使用
-const through2 = require('through2');						// 同上
-const source = require('vinyl-source-stream');				// 将常规流转换为包含 Stream 的 vinyl 对象
-const buffer = require('vinyl-buffer');						// 将 vinyl 对象内容中的 Stream 转换为 Buffer。
 const watchify = require('watchify');
-const standalonify = require('standalonify');				// browserify插件，作用就是通用模块解析器【支持AMD/CMD】
-const babelify = require('babelify');
 const webpack = require('webpack');							// webpack
-// const webpack = require('gulp-webpack');
-// const open = require('open');							// 打开浏览器
+const open = require('open');								// 打开浏览器
 
 
 
@@ -155,7 +147,7 @@ gulp.task(TASK.BUILD, () => {});
 
 /* clean 文件清除任务 ------------------------------------------------------------------------------------- */
 gulp.task(TASK.CLEAN, () => {
-	return gulp.src([devPath, prdPath], {read: false})
+	return gulp.src([devPath, prdPath, revPath.root], {read: false})
 			   .pipe(clean());
 });
 
@@ -222,7 +214,7 @@ gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
 		*/
 
 		/* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
-		gulp.task('js', [TASK.STYLE.main], () => {
+		gulp.task(TASK.SCRIPT.main, [TASK.STYLE.main], () => {
 			switch(process.env.NODE_ENV) {
 				case 'development':
 					webpack(require('./webpack.dev.conf.js'), (err, stats) => {});

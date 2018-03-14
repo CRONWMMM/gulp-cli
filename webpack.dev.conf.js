@@ -2,26 +2,19 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+// 这块也是他妈的一个天坑，path.join编译出来的反斜杠windows下Nodejs根本不识别，要自己再转译
+const resolve = dir => path.join(__dirname, dir).replace(/\\/g, '\\\\');
+const CONFIG = require('./config');
+const {ENTRY, DEV} = CONFIG;
+const HTML_PLUGINS = (list => list.map(item => new HtmlWebpackPlugin(item)))(DEV.HTML_PLUGINS);
 
 module.exports = {
-	entry: {
-		main: './src/js/index.js'
-	},
-	output: {
-		path: path.resolve(__dirname, 'build/js'),
-		filename: '[name].[chunkhash].js'
-	},
+	entry: ENTRY,
+	output: DEV.OUTPUT,
 	resolve: {
 		extensions: ['.js', '.vue', '.json'],
 		alias: {
-			'@': resolve('src'),
-			// 'common': resolve('src/common'),
-			// 'components': resolve('src/components'),
-			// 'api': resolve('src/api'),
-			// 'base': resolve('src/base')
+			'@': resolve('src')
 		}
 	},
 	module: {
@@ -40,21 +33,9 @@ module.exports = {
 		// keep module.id stable when vender modules does not change
 		// vendor不修改的话会默认使用浏览器之前缓存的vendor，webpack不会重新打包生成hash文件
     	new webpack.HashedModuleIdsPlugin(),
-		new HtmlWebpackPlugin({
-			filename: path.resolve(__dirname, 'build/views/index.html'),
-			template: './src/views/index.html',		// 没有template的话，webpack会自动生成一份新的html文件
-			inject: true,
-			chunks: ['main','vendor','manifest'],
-			// necessary to consistently work with multiple chunks via CommonsChunkPlugin
-     	 	chunksSortMode: 'dependency'
-		}),
-		new HtmlWebpackPlugin({
-			filename: path.resolve(__dirname, 'build/views/login.html'),
-			inject: true,
-			chunks: ['']
-		})
+    	...HTML_PLUGINS
 	],
-	optimization: {
+	optimization: {		// webpack4+相对于3+的版本修改
 		runtimeChunk: {
 			name: 'manifest'
 		},

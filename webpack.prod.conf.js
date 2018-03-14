@@ -1,19 +1,21 @@
 const path = require('path');
 const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-
-function resolve (dir) {
-  return path.join(__dirname, '..', dir)
-}
+// 这块也是他妈的一个天坑，path.join编译出来的反斜杠windows下Nodejs根本不识别，要自己再转译
+const resolve = dir => path.join(__dirname, dir).replace(/\\/g, '\\\\');
+const CONFIG = require('./config');
+const {ENTRY, BUILD} = CONFIG;
+const HTML_PLUGINS = (list => list.map(item => new HtmlWebpackPlugin(item)))(BUILD.HTML_PLUGINS);
 
 module.exports = {
-	entry: {
-		main: './src/js/main.js'
-	},
-	output: {
-		path: path.resolve(__dirname, 'dist/js'),
-		filename: '[name].js',
-		publicPath: '/'
+	entry: ENTRY,
+	output: BUILD.OUTPUT,
+	resolve: {
+		extensions: ['.js', '.vue', '.json'],
+		alias: {
+			'@': resolve('src')
+		}
 	},
 	module: {
 		rules: [
@@ -27,9 +29,13 @@ module.exports = {
 	plugins: [
 		new webpack.ProvidePlugin({
 			$: 'jquery'
-		})
+		}),
+		// keep module.id stable when vender modules does not change
+		// vendor不修改的话会默认使用浏览器之前缓存的vendor，webpack不会重新打包生成hash文件
+    	new webpack.HashedModuleIdsPlugin(),
+    	...HTML_PLUGINS
 	],
-	optimization: {
+	optimization: {		// webpack4+相对于3+的版本修改
 		runtimeChunk: {
 			name: 'manifest'
 		},
