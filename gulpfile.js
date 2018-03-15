@@ -19,6 +19,7 @@
  * 12.https://www.cnblogs.com/wonyun/p/6030090.html 					【html-webpack-plugin详解】
  * 13.https://segmentfault.com/a/1190000007294861						【html-webpack-plugin用法全解】
  * 14.http://blog.csdn.net/keliyxyz/article/details/51513114			【webpack入门（六）——html-webpack-plugin】
+ * 15.https://segmentfault.com/a/1190000006085774						【gulp之JS、CSS、HTML、图片压缩以及版本更新】
  * 
  */
 
@@ -110,23 +111,51 @@ const PATH_CONFIG = {
 	}
 };
 const TASK = {
-	CLEAN: 'clean',
-	BUILD: 'build',
-	HTML: 'html',
-	SERVER: 'server',
-	WATCH: 'watch',
-	STYLE: {
-		main: 'css',
-		sass: 'sass',										// sass编译
-		less: 'less',										// less编译
-		stylus: 'stylus',									// stylus编译
+	BUILD: {
+		MAIN: 'build',
+		CLEAN: 'clean',
+		HTML: 'html',
+		STYLE: {
+			MAIN: 'css',
+			SASS: 'sass',										// sass编译
+			LESS: 'less',										// less编译
+			STYLUS: 'stylus',									// stylus编译
+		},
+		SCRIPT: {
+			MAIN: 'js',
+			JS_UGLIFY: 'uglify',								// JS混淆
+			JS_CONCAT: 'concat',								// JS文件合并
+		}
 	},
-	SCRIPT: {
-		main: 'js',
-		jsUglify: 'uglify',									// JS混淆
-		jsConcat: 'concat',									// JS文件合并
+	DEV: {
+		MAIN: 'build',
+		CLEAN: 'clean',
+		HTML: 'html',
+		STYLE: {
+			MAIN: 'css',
+			SASS: 'sass',										// sass编译
+			LESS: 'less',										// less编译
+			STYLUS: 'stylus',									// stylus编译
+		},
+		SCRIPT: {
+			MAIN: 'js',
+			JS_UGLIFY: 'uglify',								// JS混淆
+			JS_CONCAT: 'concat',								// JS文件合并
+		},
+		// 服务/页面启动/刷新相关任务名
+		SERVER: 'server',										// 服务
+		NODEMON: 'nodemon',										// 巡行NodeJS服务器
+		BROWSER_SYNC: 'browser-sync',							// 浏览器同步
+		WATCH: 'watch',											// 监听
 	}
-}
+};
+const ROUTES = {
+	PROXY: 'http://localhost:3000',
+	PORT: 7000,
+};
+
+
+
 
 // gulp不同环境命令，写在script里面
 // gulp serve --env production
@@ -245,13 +274,40 @@ gulp.task(TASK.HTML, [TASK.STYLE.main, TASK.SCRIPT.main], () => {
 
 
 /* watch 监听任务 ----------------------------------------------------------------------------------------- */
-gulp.task(TASK.WATCH, () => {});
+gulp.task(TASK.WATCH, [TASK.NODEMON], () => {
+	return gulp.watch(`${config.srcPath}sass/**/*.scss`, ['sass']);
+});
 
 
 
 
 
 /* 启动 server 任务 --------------------------------------------------------------------------------------- */
+// 启动NodeJS服务文件
+gulp.task(TASK.NODEMON, (cb) => {
+	let started = false;
+	return nodemon({
+		script: 'server.js'
+	}).on('start', () => {
+        // to avoid nodemon being started multiple times
+        if (!started) {
+            cb();
+            started = true;
+        }
+	});
+});
+
+// 浏览器同步，用7000端口去代理Express的3008端口
+gulp.task(TASK.BROWSER_SYNC, [TASK.NODEMON], function() {
+  return browserSync.init({
+    notify: false,//关闭页面通知
+    proxy: ROUTES.PROXY,
+    files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
+    browser: "chrome",
+    port: ROUTES.port
+  });
+});
+
 gulp.task(TASK.SERVER, () => {});
 
 
