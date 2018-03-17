@@ -113,34 +113,34 @@ const PATH_CONFIG = {
 const TASK = {
 	BUILD: {
 		MAIN: 'build',
-		CLEAN: 'clean',
-		HTML: 'html',
+		CLEAN: 'build-clean',
+		HTML: 'build-html',
 		STYLE: {
-			MAIN: 'css',
-			SASS: 'sass',										// sass编译
-			LESS: 'less',										// less编译
-			STYLUS: 'stylus',									// stylus编译
+			MAIN: 'build-css',
+			SASS: 'build-sass',										// sass编译
+			LESS: 'build-less',										// less编译
+			STYLUS: 'build-stylus',									// stylus编译
 		},
 		SCRIPT: {
-			MAIN: 'js',
-			JS_UGLIFY: 'uglify',								// JS混淆
-			JS_CONCAT: 'concat',								// JS文件合并
+			MAIN: 'build-js',
+			JS_UGLIFY: 'build-uglify',								// JS混淆
+			JS_CONCAT: 'build-concat',								// JS文件合并
 		}
 	},
 	DEV: {
-		MAIN: 'build',
-		CLEAN: 'clean',
-		HTML: 'html',
+		MAIN: 'dev',
+		CLEAN: 'dev-clean',
+		HTML: 'dev-html',
 		STYLE: {
-			MAIN: 'css',
-			SASS: 'sass',										// sass编译
-			LESS: 'less',										// less编译
-			STYLUS: 'stylus',									// stylus编译
+			MAIN: 'dev-css',
+			SASS: 'dev-sass',										// sass编译
+			LESS: 'dev-less',										// less编译
+			STYLUS: 'dev-stylus',									// stylus编译
 		},
 		SCRIPT: {
-			MAIN: 'js',
-			JS_UGLIFY: 'uglify',								// JS混淆
-			JS_CONCAT: 'concat',								// JS文件合并
+			MAIN: 'dev-js',
+			JS_UGLIFY: 'dev-uglify',								// JS混淆
+			JS_CONCAT: 'dev-concat',								// JS文件合并
 		},
 		// 服务/页面启动/刷新相关任务名
 		SERVER: 'server',										// 服务
@@ -168,113 +168,165 @@ const ROUTES = {
 const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath } = PATH_CONFIG;
 
 
-/* build 文件打包任务 ------------------------------------------------------------------------------------- */
-gulp.task(TASK.BUILD, () => {});
+/* 生产环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* 打包任务 */
+gulp.task(TASK.BUILD.MAIN, () => {});
+
+/* clean 文件清除任务 */
+gulp.task(TASK.BUILD.CLEAN, () => {
+    return gulp.src([prdPath, revPath.root], {read: false})
+        .pipe(clean());
+});
+
+
+/* style 任务 */
+gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
+    return gulp.src(`${srcPath}${stylePath.sassEntry}`)
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+});
+
+gulp.task(TASK.BUILD.STYLE.MAIN, [TASK.BUILD.STYLE.SASS], () => {
+    return gulp.src(`${devPath}**/*.css`)
+        .pipe(cssmin())
+        .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
+        .pipe(gulp.dest(`${prdPath}`))
+        .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
+        .pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
+});
+
+
+/* JS 任务 */
+/* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是CMD模块，浏览器不能解析，遂卒 */
+/*
+ gulp.task('js', () =>
+ gulp.src(`${srcPath}js/entries/vendors.js`)
+ .pipe(babel({
+ presets: ['env'],
+ plugins: ['transform-runtime']
+ }))
+ .pipe(webpack())
+ .pipe(gulp.dest(`${devPath}`))
+ );
+ */
+
+
+/* 第二版，用browserify，打包出来的文件贼鸡巴大，你感动吗？我不敢动不敢动。。。
+ gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
+
+ return browserify({
+ entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
+ }).plugin(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
+ name: 'FlareJ'
+ }).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
+ presets: [
+ 'env'
+ ],
+ plugins: [
+ 'transform-runtime',
+ 'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
+ ]
+ }).bundle()  //合并打包
+ .pipe(source('vendors.js'))
+ .pipe(buffer())
+ // .pipe(uglify())
+ .pipe(gulp.dest(`${devPath}`));
+
+ });
+ */
+
+/* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
+gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MAIN], () => {
+    switch(process.env.NODE_ENV) {
+        case 'development':
+            webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+            break;
+        case 'production':
+            webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+            break;
+        default:
+            webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+            break;
+    }
+});
+
+
+/* html 任务 */
+gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.MAIN, TASK.BUILD.SCRIPT.MAIN], () => {
+    gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
+        .pipe(revCollector())	// 替换静态资源MD5文件名
+        .pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
+});
 
 
 
 
-/* clean 文件清除任务 ------------------------------------------------------------------------------------- */
-gulp.task(TASK.CLEAN, () => {
-	return gulp.src([devPath, prdPath, revPath.root], {read: false})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* 开发环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+/* clean 文件清除任务 */
+gulp.task(TASK.DEV.CLEAN, () => {
+	return gulp.src([devPath], {read: false})
 			   .pipe(clean());
 });
 
 
 
 
-/* style 任务 --------------------------------------------------------------------------------------------- */
-gulp.task(TASK.STYLE.sass, [TASK.CLEAN], () => {
+/* style 任务 */
+gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
 	return gulp.src(`${srcPath}${stylePath.sassEntry}`)
 			   .pipe(sass().on('error', sass.logError))
-			   .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`))
-});
-
-gulp.task(TASK.STYLE.main, [TASK.STYLE.sass], () => {
-	return gulp.src(`${devPath}**/*.css`)
-			   .pipe(cssmin())
-			   .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-			   .pipe(gulp.dest(`${prdPath}`))
-			   .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
-			   .pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
+			   .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
 
 
 
 
-/* JS 任务 ------------------------------------------------------------------------------------------------ */
-		/* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是CMD模块，浏览器不能解析，遂卒 */
-		/*
-		gulp.task('js', () =>
-		    gulp.src(`${srcPath}js/entries/vendors.js`)
-		        .pipe(babel({
-		        	presets: ['env'],
-		            plugins: ['transform-runtime']
-		        }))
-		        .pipe(webpack())
-		        .pipe(gulp.dest(`${devPath}`))
-		);
-		*/
+/* JS 任务，还少了一个source-map，后面补充 */
+gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
+	switch(process.env.NODE_ENV) {
+		case 'development':
+			webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+			break;
+		case 'production':
+			webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+			break;
+		default:
+			webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+			break;
+	}
+});
 
 
-		/* 第二版，用browserify，打包出来的文件贼鸡巴大，你感动吗？我不敢动不敢动。。。
-		gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
-
-			return browserify({
-				entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
-			}).plugin(standalonify, {		 //使打包后的js文件符合UMD规范并指定外部依赖包
-				name: 'FlareJ'
-			}).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
-				presets: [
-					'env'
-				],
-				plugins: [
-					'transform-runtime',
-					'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
-				]
-		    }).bundle()  //合并打包
-			.pipe(source('vendors.js'))
-			.pipe(buffer())
-			// .pipe(uglify())
-			.pipe(gulp.dest(`${devPath}`));
-			
-		});
-		*/
-
-		/* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
-		gulp.task(TASK.SCRIPT.main, [TASK.STYLE.main], () => {
-			switch(process.env.NODE_ENV) {
-				case 'development':
-					webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
-					break;
-				case 'production':
-					webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-					break;
-				default: 
-					webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-					break;
-			}
-		});
-
-
-/* html 任务 ---------------------------------------------------------------------------------------------- */
-gulp.task(TASK.HTML, [TASK.STYLE.main, TASK.SCRIPT.main], () => {
+/* html 任务 */
+gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.MAIN, TASK.DEV.SCRIPT.MAIN], () => {
 	// 这块有坑，分两步，先生成一份html文件到生产环境，开发环境需要rev映射文件名的另写，如果把复制html文件到生产环境的操作
 	// 和开发环境混写，会生成无用的rev映射
-	gulp.src(`${srcPath}**/*.html`)
-		.pipe(gulp.dest(`${devPath}`));	// 开发环境就不需要MD5随机文件名了
-
-	gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
-		.pipe(revCollector())	// 替换静态资源MD5文件名
-		.pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
+    // 开发环境就不需要MD5随机文件名了
+	return gulp.src(`${srcPath}**/*.html`)
+		       .pipe(gulp.dest(`${devPath}`));
 });
 
 
 
 
-/* watch 监听任务 ----------------------------------------------------------------------------------------- */
-gulp.task(TASK.WATCH, [TASK.NODEMON], () => {
+/* watch 监听任务 */
+gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
 	return gulp.watch(`${config.srcPath}sass/**/*.scss`, ['sass']);
 });
 
@@ -282,9 +334,9 @@ gulp.task(TASK.WATCH, [TASK.NODEMON], () => {
 
 
 
-/* 启动 server 任务 --------------------------------------------------------------------------------------- */
+/* 启动 server 任务 */
 // 启动NodeJS服务文件
-gulp.task(TASK.NODEMON, (cb) => {
+gulp.task(TASK.DEV.NODEMON, (cb) => {
 	let started = false;
 	return nodemon({
 		script: 'server.js'
@@ -298,7 +350,7 @@ gulp.task(TASK.NODEMON, (cb) => {
 });
 
 // 浏览器同步，用7000端口去代理Express的3008端口
-gulp.task(TASK.BROWSER_SYNC, [TASK.NODEMON], function() {
+gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
   return browserSync.init({
     notify: false,//关闭页面通知
     proxy: ROUTES.PROXY,
@@ -308,6 +360,6 @@ gulp.task(TASK.BROWSER_SYNC, [TASK.NODEMON], function() {
   });
 });
 
-gulp.task(TASK.SERVER, () => {});
+gulp.task(TASK.DEV.SERVER, () => {});
 
 
