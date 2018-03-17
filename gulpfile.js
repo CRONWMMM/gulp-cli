@@ -103,6 +103,7 @@ const PATH_CONFIG = {
     scriptPath: {
         mainEntry: 'js/main.js'
     },
+    htmlManifestPath: 'temp/',                              // 作为静态css资源映射替换的临时存储文件夹
     revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
         fileName: 'rev-manifest.json',						// 生成的rev映射文件名
         root: 'rev/',										// 根目录
@@ -155,7 +156,7 @@ const ROUTES = {
     PORT: 7000,
 };
 
-const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath, htmlManifestPath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -187,11 +188,11 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
         .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
         .pipe(gulp.dest(`${revPath.cssrev}`));	// 装填JSON映射表
 });
-
+// 通过样式映射表修改html文件上引用的css文件路径
 gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
         .pipe(revCollector())	// 替换静态资源MD5文件名
-        .pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
+        .pipe(gulp.dest(`${htmlManifestPath}`));	// 将替换后的html文件装填到新目录，这块暂时没办法在同一个文件夹中更改并生成文件，只能先弄个temp文件夹承接，用完再删除
 });
 
 /* JS 任务 */
@@ -236,10 +237,13 @@ gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
 /* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
 gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
     webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-
 });
 
-gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN], () => {});
+gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN], () => {
+    // 这块暂时没办法在同一个文件夹中更改并生成文件，只能先弄个temp文件夹承接，用完再删除
+    gulp.src([htmlManifestPath], {read: false})
+        .pipe(clean());
+});
 
 
 

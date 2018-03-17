@@ -42,7 +42,8 @@ module.exports = {
 			{
 				filename: resolve('dist/views/index.html'),
 				// 没有template的话，webpack会自动生成一份新的html文件
-				template: resolve('src/views/index.html'),
+				// 这块暂时没办法在同一个文件夹中更改并生成文件，只能先弄个temp文件夹承接，用完再删除
+				template: resolve('temp/views/index.html'),
 				inject: true,
 				chunks: ['main','vendor','manifest'],
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
