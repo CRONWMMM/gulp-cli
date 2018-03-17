@@ -35,12 +35,12 @@ module.exports = {
 	/* 生产环境 --------------------------------------------------------------------------- */
 	BUILD: {
 		OUTPUT: {
-			path: resolve('build/js'),
+			path: resolve('dist/js'),
 			filename: '[name].[chunkhash].js'
 		},
 		HTML_PLUGINS: [		// webpack的HtmlWebpackPlugin实例数组，对应每个页面文件
 			{
-				filename: resolve('build/views/index.html'),
+				filename: resolve('dist/views/index.html'),
 				// 没有template的话，webpack会自动生成一份新的html文件
 				template: resolve('src/views/index.html'),
 				inject: true,
@@ -48,7 +48,7 @@ module.exports = {
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
 				chunksSortMode: 'dependency'
 			},{
-				filename: path.resolve('build/views/login.html'),
+				filename: path.resolve('dist/views/login.html'),
 				inject: true,
 				chunks: ['']
 			}

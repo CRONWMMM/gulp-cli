@@ -2,7 +2,7 @@
  *
  * author: CRONWMMM
  * github: https://github.com/CRONWMMM
- * 
+ *
  * 相关参考文件：
  *
  * 1.https://www.jianshu.com/p/9723ca2a2afd								【gulp 入门】
@@ -20,7 +20,7 @@
  * 13.https://segmentfault.com/a/1190000007294861						【html-webpack-plugin用法全解】
  * 14.http://blog.csdn.net/keliyxyz/article/details/51513114			【webpack入门（六）——html-webpack-plugin】
  * 15.https://segmentfault.com/a/1190000006085774						【gulp之JS、CSS、HTML、图片压缩以及版本更新】
- * 
+ *
  */
 
 
@@ -81,80 +81,81 @@ const open = require('open');								// 打开浏览器
 
 
 const COMMON_CONFIG = {
-	need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
-	random_file_name: true,									// 是否需要随机文件名
-	source_maps: {											// 是否需要生成map映射文件
-		js_map: true,
-		style_map: true
-	}
+    need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
+    random_file_name: true,									// 是否需要随机文件名
+    source_maps: {											// 是否需要生成map映射文件
+        js_map: true,
+        style_map: true
+    }
 };
 const PATH_CONFIG = {
-	serverPath: 'server/',									// 服务路径
-	libPath: '',											// 依赖库路径
-	srcPath: 'src/',										// 源码路径
-	devPath: 'build/',										// 开发环境
-	prdPath: 'dist/',										// 生产环境
-	stylePath: {
-		sassEntry: 'style/sass/index.scss',					// sass入口文件
-		lessEntry: 'style/less/index.less',
-		stylusEntry: '',
-		outputFolder: 'css'									// css的输出文件夹
-	},
-	scriptPath: {
-		mainEntry: 'js/main.js'
-	},
-	revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
-		fileName: 'rev-manifest.json',						// 生成的rev映射文件名
-		root: 'rev/',										// 根目录
-		jsrev: 'rev/jsrev',
-		cssrev: 'rev/cssrev'
-	}
+    serverPath: 'server/',									// 服务路径
+    libPath: '',											// 依赖库路径
+    srcPath: 'src/',										// 源码路径
+    devPath: 'build/',										// 开发环境
+    prdPath: 'dist/',										// 生产环境
+    stylePath: {
+        sassEntry: 'style/sass/index.scss',					// sass入口文件
+        lessEntry: 'style/less/index.less',
+        stylusEntry: '',
+        outputFolder: 'css'									// css的输出文件夹
+    },
+    scriptPath: {
+        mainEntry: 'js/main.js'
+    },
+    revPath: {												// 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
+        fileName: 'rev-manifest.json',						// 生成的rev映射文件名
+        root: 'rev/',										// 根目录
+        jsrev: 'rev/jsrev',
+        cssrev: 'rev/cssrev'
+    }
 };
 const TASK = {
-	BUILD: {
-		MAIN: 'build',
-		CLEAN: 'build-clean',
-		HTML: 'build-html',
-		STYLE: {
-			MAIN: 'build-css',
-			SASS: 'build-sass',										// sass编译
-			LESS: 'build-less',										// less编译
-			STYLUS: 'build-stylus',									// stylus编译
-		},
-		SCRIPT: {
-			MAIN: 'build-js',
-			JS_UGLIFY: 'build-uglify',								// JS混淆
-			JS_CONCAT: 'build-concat',								// JS文件合并
-		}
-	},
-	DEV: {
-		MAIN: 'dev',
-		CLEAN: 'dev-clean',
-		HTML: 'dev-html',
-		STYLE: {
-			MAIN: 'dev-css',
-			SASS: 'dev-sass',										// sass编译
-			LESS: 'dev-less',										// less编译
-			STYLUS: 'dev-stylus',									// stylus编译
-		},
-		SCRIPT: {
-			MAIN: 'dev-js',
-			JS_UGLIFY: 'dev-uglify',								// JS混淆
-			JS_CONCAT: 'dev-concat',								// JS文件合并
-		},
-		// 服务/页面启动/刷新相关任务名
-		SERVER: 'server',										// 服务
-		NODEMON: 'nodemon',										// 巡行NodeJS服务器
-		BROWSER_SYNC: 'browser-sync',							// 浏览器同步
-		WATCH: 'watch',											// 监听
-	}
+    BUILD: {
+        MAIN: 'build',
+        CLEAN: 'build-clean',
+        HTML: 'build-html',
+        STYLE: {
+            MAIN: 'build-css',
+            SASS: 'build-sass',										// sass编译
+            LESS: 'build-less',										// less编译
+            STYLUS: 'build-stylus',									// stylus编译
+            MANIFEST: 'dev-manifest'
+        },
+        SCRIPT: {
+            MAIN: 'build-js',
+            JS_UGLIFY: 'build-uglify',								// JS混淆
+            JS_CONCAT: 'build-concat',								// JS文件合并
+        }
+    },
+    DEV: {
+        MAIN: 'dev',
+        CLEAN: 'dev-clean',
+        HTML: 'dev-html',
+        STYLE: {
+            MAIN: 'dev-css',
+            SASS: 'dev-sass',										// sass编译
+            LESS: 'dev-less',										// less编译
+            STYLUS: 'dev-stylus',									// stylus编译
+        },
+        SCRIPT: {
+            MAIN: 'dev-js',
+            JS_UGLIFY: 'dev-uglify',								// JS混淆
+            JS_CONCAT: 'dev-concat',								// JS文件合并
+        },
+        // 服务/页面启动/刷新相关任务名
+        SERVER: 'server',										// 服务
+        NODEMON: 'nodemon',										// 巡行NodeJS服务器
+        BROWSER_SYNC: 'browser-sync',							// 浏览器同步
+        WATCH: 'watch',											// 监听
+    }
 };
 const ROUTES = {
-	PROXY: 'http://localhost:3000',
-	PORT: 7000,
+    PROXY: 'http://localhost:3000',
+    PORT: 7000,
 };
 
-
+const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -163,9 +164,6 @@ const ROUTES = {
 
 
 
-
-
-const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath } = PATH_CONFIG;
 
 
 /* 生产环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -183,18 +181,18 @@ gulp.task(TASK.BUILD.CLEAN, () => {
 gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
         .pipe(sass().on('error', sass.logError))
-        .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
-});
-
-gulp.task(TASK.BUILD.STYLE.MAIN, [TASK.BUILD.STYLE.SASS], () => {
-    return gulp.src(`${devPath}**/*.css`)
         .pipe(cssmin())
         .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-        .pipe(gulp.dest(`${prdPath}`))
+        .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
         .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
-        .pipe(gulp.dest(`${revPath.cssrev}`))	// 装填JSON映射表
+        .pipe(gulp.dest(`${revPath.cssrev}`));	// 装填JSON映射表
 });
 
+gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
+    return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
+        .pipe(revCollector())	// 替换静态资源MD5文件名
+        .pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
+});
 
 /* JS 任务 */
 /* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是CMD模块，浏览器不能解析，遂卒 */
@@ -236,27 +234,15 @@ gulp.task(TASK.BUILD.STYLE.MAIN, [TASK.BUILD.STYLE.SASS], () => {
  */
 
 /* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
-gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MAIN], () => {
-    switch(process.env.NODE_ENV) {
-        case 'development':
-            webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
-            break;
-        case 'production':
-            webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-            break;
-        default:
-            webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-            break;
-    }
+gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
+    webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+
 });
 
+gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN], () => {});
 
-/* html 任务 */
-gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.MAIN, TASK.BUILD.SCRIPT.MAIN], () => {
-    gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
-        .pipe(revCollector())	// 替换静态资源MD5文件名
-        .pipe(gulp.dest(`${prdPath}`));	// 装填到生产目录
-});
+
+
 
 
 
@@ -279,8 +265,8 @@ gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.MAIN, TASK.BUILD.SCRIPT.MAIN], () =
 
 /* clean 文件清除任务 */
 gulp.task(TASK.DEV.CLEAN, () => {
-	return gulp.src([devPath], {read: false})
-			   .pipe(clean());
+    return gulp.src([devPath], {read: false})
+        .pipe(clean());
 });
 
 
@@ -288,9 +274,9 @@ gulp.task(TASK.DEV.CLEAN, () => {
 
 /* style 任务 */
 gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
-	return gulp.src(`${srcPath}${stylePath.sassEntry}`)
-			   .pipe(sass().on('error', sass.logError))
-			   .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+    return gulp.src(`${srcPath}${stylePath.sassEntry}`)
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
 
@@ -299,27 +285,17 @@ gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
 
 /* JS 任务，还少了一个source-map，后面补充 */
 gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
-	switch(process.env.NODE_ENV) {
-		case 'development':
-			webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
-			break;
-		case 'production':
-			webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-			break;
-		default:
-			webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
-			break;
-	}
+    webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
 });
 
 
 /* html 任务 */
-gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.MAIN, TASK.DEV.SCRIPT.MAIN], () => {
-	// 这块有坑，分两步，先生成一份html文件到生产环境，开发环境需要rev映射文件名的另写，如果把复制html文件到生产环境的操作
-	// 和开发环境混写，会生成无用的rev映射
+gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN], () => {
+    // 这块有坑，分两步，先生成一份html文件到生产环境，开发环境需要rev映射文件名的另写，如果把复制html文件到生产环境的操作
+    // 和开发环境混写，会生成无用的rev映射
     // 开发环境就不需要MD5随机文件名了
-	return gulp.src(`${srcPath}**/*.html`)
-		       .pipe(gulp.dest(`${devPath}`));
+    return gulp.src(`${srcPath}**/*.html`)
+        .pipe(gulp.dest(`${devPath}`));
 });
 
 
@@ -327,7 +303,7 @@ gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.MAIN, TASK.DEV.SCRIPT.MAIN], () => {
 
 /* watch 监听任务 */
 gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
-	return gulp.watch(`${config.srcPath}sass/**/*.scss`, ['sass']);
+    return gulp.watch(`${config.srcPath}sass/**/*.scss`, ['sass']);
 });
 
 
@@ -337,27 +313,27 @@ gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
 /* 启动 server 任务 */
 // 启动NodeJS服务文件
 gulp.task(TASK.DEV.NODEMON, (cb) => {
-	let started = false;
-	return nodemon({
-		script: 'server.js'
-	}).on('start', () => {
+    let started = false;
+    return nodemon({
+        script: 'server.js'
+    }).on('start', () => {
         // to avoid nodemon being started multiple times
         if (!started) {
             cb();
             started = true;
         }
-	});
+    });
 });
 
 // 浏览器同步，用7000端口去代理Express的3008端口
 gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
-  return browserSync.init({
-    notify: false,//关闭页面通知
-    proxy: ROUTES.PROXY,
-    files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
-    browser: "chrome",
-    port: ROUTES.port
-  });
+    return browserSync.init({
+        notify: false,//关闭页面通知
+        proxy: ROUTES.PROXY,
+        files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
+        browser: "chrome",
+        port: ROUTES.port
+    });
 });
 
 gulp.task(TASK.DEV.SERVER, () => {});
