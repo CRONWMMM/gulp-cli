@@ -20,13 +20,15 @@
  * 13.https://segmentfault.com/a/1190000007294861						【html-webpack-plugin用法全解】
  * 14.http://blog.csdn.net/keliyxyz/article/details/51513114			【webpack入门（六）——html-webpack-plugin】
  * 15.https://segmentfault.com/a/1190000006085774						【gulp之JS、CSS、HTML、图片压缩以及版本更新】
+ * 16.https://github.com/ai/browserslist#queries                        【gulp-autoprefixer的browsers参数详解】
+ *
  *
  */
 
 
 const gulp = require('gulp');
 
-/* 文件名重命名处理，主要解决文件缓存 ---------------------------------------------------------------------- */
+/* 文件名重命名处理，主要解决文件缓存 -------------------------------------------------------------------------- */
 const rev = require('gulp-rev');							// 对文件名加MD5后缀
 const revCollector = require('gulp-rev-collector');         // 路径替换
 
@@ -39,12 +41,13 @@ const spriter = require('gulp-css-spriter'); 			 	// 雪碧图
 const htmlmin = require('gulp-htmlmin');
 
 
-/* 样式文件处理 -------------------------------------------------------------------------------------------- */
+/* 样式文件处理 --------------------------------------------------------------------------------------------- */
 const cssmin = require('gulp-cssmin');						// css压缩
 const cleanCss = require('gulp-clean-css');
 const px3rem = require("gulp-px3rem");						// rem单位转换
 const sass = require('gulp-sass');							// 处理sass
-
+const autoPrefixer = require('gulp-autoprefixer');          // css样式自动加前缀
+const base64 = require('gulp-base64');                      // 处理base64
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
 const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
@@ -54,11 +57,11 @@ const uglify = require('gulp-uglify');						// 混淆工具
 const concat = require('gulp-concat');						// js文件合并
 
 
-/* 文件清除 ------------------------------------------------------------------------------------------------ */
+/* 文件清除 ------------------------------------------------------------------------------------------------- */
 const clean = require('gulp-clean');
 
 
-/* sourcemap ----------------------------------------------------------------------------------------------- */
+/* sourcemap ---------------------------------------------------------------------------------------------- */
 const sourcemaps = require('gulp-sourcemaps');
 
 /* server服务 ---------------------------------------------------------------------------------------------- */
@@ -80,7 +83,7 @@ const open = require('open');								// 打开浏览器
 
 
 
-const COMMON_CONFIG = {
+const CONTROL_CONFIG = {
     need_dev: true,											// 是否需要使用dev环境/是否需要打包一份build文件夹
     random_file_name: true,									// 是否需要随机文件名
     source_maps: {											// 是否需要生成map映射文件
@@ -94,6 +97,8 @@ const PATH_CONFIG = {
     srcPath: 'src/',										// 源码路径
     devPath: 'build/',										// 开发环境
     prdPath: 'dist/',										// 生产环境
+    staticPath: 'static/',                                  // 静态资源路径
+    imagesPath: 'static/images/',                           // 图片路径
     stylePath: {
         sassEntry: 'style/sass/index.scss',					// sass入口文件
         lessEntry: 'style/less/index.less',
@@ -127,6 +132,11 @@ const TASK = {
             MAIN: 'build-js',
             JS_UGLIFY: 'build-uglify',								// JS混淆
             JS_CONCAT: 'build-concat',								// JS文件合并
+        },
+        IMAGE: {
+            MAIN: 'build-image',
+            IMAGE_MIN: 'build-image-min',
+            base64: 'build-base64'
         }
     },
     DEV: {
@@ -146,7 +156,7 @@ const TASK = {
         },
         // 服务/页面启动/刷新相关任务名
         SERVER: 'server',										// 服务
-        NODEMON: 'nodemon',										// 巡行NodeJS服务器
+        NODEMON: 'nodemon',										// 运行NodeJS服务器
         BROWSER_SYNC: 'browser-sync',							// 浏览器同步
         WATCH: 'watch',											// 监听
     }
@@ -156,7 +166,33 @@ const ROUTES = {
     PORT: 7000,
 };
 
-const { serverPath, srcPath, devPath, prdPath, stylePath, revPath, scriptPath, htmlManifestPath } = PATH_CONFIG;
+const AUTO_PREFIXER_CONFIG = {                                  // gulp-autoprefixer 配置文件
+    DEV: {
+        browsers: ['last 2 versions', 'Android >= 4.0', 'iOS 7'],
+        cascade: false
+    },
+    BUILD: {
+        browsers: ['last 2 versions', 'Android >= 4.0', 'iOS 7'],
+        cascade: false
+    }
+};
+
+const BASE64_CONFIG = {                                         // gulp-base64 配置文件
+    DEV: {
+        baseDir: `${PATH_CONFIG.devPath}${PATH_CONFIG.staticPath}`,
+        extensions: ['png'],
+        maxImageSize: 20 * 1024,
+        debug: true
+    },
+    BUILD: {
+        baseDir: `${PATH_CONFIG.prdPath}${PATH_CONFIG.staticPath}`,
+        extensions: ['png'],
+        maxImageSize: 20 * 1024,
+        debug: false
+    }
+};
+
+const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, htmlManifestPath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -181,8 +217,10 @@ gulp.task(TASK.BUILD.CLEAN, () => {
 /* style 任务 */
 gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
-        .pipe(sass().on('error', sass.logError))
-        .pipe(cssmin())
+        .pipe(sass().on('error', sass.logError))  // sass 文件编译
+        .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
+        .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
+        .pipe(cssmin()) // css 压缩
         .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
         .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
         .pipe(rev.manifest(revPath.fileName))	// 生成JSON的映射表
@@ -192,7 +230,7 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
 gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
         .pipe(revCollector())	// 替换静态资源MD5文件名
-        .pipe(gulp.dest(`${htmlManifestPath}`));	// 将替换后的html文件装填到新目录，这块暂时没办法在同一个文件夹中更改并生成文件，只能先弄个temp文件夹承接，用完再删除
+        .pipe(gulp.dest(`${htmlManifestPath}`));	// 将替换后的html文件装填到新目录
 });
 
 /* JS 任务 */
@@ -239,8 +277,18 @@ gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
     webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
 });
 
-gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN], () => {
-    // 这块暂时没办法在同一个文件夹中更改并生成文件，只能先弄个temp文件夹承接，用完再删除
+
+/* image 任务 */
+gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
+    // gulp-imagemin 压缩jpg格式的图片，变化不大，打包png格式图片有效果
+    return gulp.src(`${srcPath}${imagesPath}*`)
+        .pipe(imagemin())
+        .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+});
+
+
+/* build 合并构建任务 */
+gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
     gulp.src([htmlManifestPath], {read: false})
         .pipe(clean());
 });
@@ -279,7 +327,9 @@ gulp.task(TASK.DEV.CLEAN, () => {
 /* style 任务 */
 gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
-        .pipe(sass().on('error', sass.logError))
+        .pipe(sass().on('error', sass.logError))  // sass 文件编译
+        .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
+        .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
         .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
