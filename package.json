@@ -27,6 +27,7 @@
     "gulp-htmlmin": "^4.0.0",
     "gulp-imagemin": "^4.1.0",
     "gulp-jshint": "^2.1.0",
+    "gulp-modify-css-urls": "^1.1.0",
     "gulp-nodemon": "^2.2.1",
     "gulp-px3rem": "^0.3.0",
     "gulp-rev": "^8.1.1",

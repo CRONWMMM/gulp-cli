@@ -21,6 +21,8 @@
  * 14.http://blog.csdn.net/keliyxyz/article/details/51513114			【webpack入门（六）——html-webpack-plugin】
  * 15.https://segmentfault.com/a/1190000006085774						【gulp之JS、CSS、HTML、图片压缩以及版本更新】
  * 16.https://github.com/ai/browserslist#queries                        【gulp-autoprefixer的browsers参数详解】
+ * 17.https://segmentfault.com/q/1010000004234745?_ea=556298            【各种gulp配置文件】
+ * 18.https://www.jianshu.com/p/8ebf9b6aee60                            【替换css 中的 url，解决打包后 background-image 引用图片路径出错问题】
  *
  *
  */
@@ -47,7 +49,7 @@ const cleanCss = require('gulp-clean-css');
 const px3rem = require("gulp-px3rem");						// rem单位转换
 const sass = require('gulp-sass');							// 处理sass
 const autoPrefixer = require('gulp-autoprefixer');          // css样式自动加前缀
-const base64 = require('gulp-base64');                      // 处理base64
+const modifyCssUrls = require('gulp-modify-css-urls');      // css 文件中 url 引用路径处理
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
 const babel = require('gulp-babel');						// babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
@@ -179,15 +181,13 @@ const AUTO_PREFIXER_CONFIG = {                                  // gulp-autopref
 
 const BASE64_CONFIG = {                                         // gulp-base64 配置文件
     DEV: {
-        baseDir: `${PATH_CONFIG.devPath}${PATH_CONFIG.staticPath}`,
-        extensions: ['png'],
-        maxImageSize: 20 * 1024,
+        extensions: ['svg', 'png', /\.jpg#datauri$/i],
+        maxImageSize: 20 * 1024,  // 字节
         debug: true
     },
     BUILD: {
-        baseDir: `${PATH_CONFIG.prdPath}${PATH_CONFIG.staticPath}`,
-        extensions: ['png'],
-        maxImageSize: 20 * 1024,
+        extensions: ['svg', 'png', /\.jpg#datauri$/i],
+        maxImageSize: 20 * 1024,  // 字节
         debug: false
     }
 };
@@ -219,6 +219,12 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
         .pipe(sass().on('error', sass.logError))  // sass 文件编译
         .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
+        .pipe(modifyCssUrls({
+            modify(url, filePath) {
+                let filename = url.split('/').pop();
+                return `/${prdPath}${imagesPath}${filename}`;
+            }
+        })) // 替换 css 样式文件中的 url 地址
         .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
         .pipe(cssmin()) // css 压缩
         .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
