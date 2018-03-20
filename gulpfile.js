@@ -192,6 +192,16 @@ const BASE64_CONFIG = {                                         // gulp-base64 �
     }
 };
 
+const MODIFY_CSS_URLS_CONFIG = {                                // gulp-modify-css-urls 配置
+    DEV: {},
+    BUILD: {
+        modify(url, filePath) {   // 替换 css 样式文件中的 url 地址，这块需要自己配置个性化处理函数
+            url = url.replace(/\.\.\/|\.\/|$\//g, '');
+            return `../${url}`;
+        }
+    }
+};
+
 const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, htmlManifestPath } = PATH_CONFIG;
 
 
@@ -219,12 +229,7 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
         .pipe(sass().on('error', sass.logError))  // sass 文件编译
         .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
-        .pipe(modifyCssUrls({
-            modify(url, filePath) {
-                let filename = url.split('/').pop();
-                return `/${prdPath}${imagesPath}${filename}`;
-            }
-        })) // 替换 css 样式文件中的 url 地址
+        .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.BUILD)) // 替换 css 样式文件中的 url 地址
         .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
         .pipe(cssmin()) // css 压缩
         .pipe(rev())	// 装填生产环境之前先对文件名加md5后缀，防止本地缓存
