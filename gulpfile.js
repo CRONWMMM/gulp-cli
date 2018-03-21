@@ -156,6 +156,11 @@ const TASK = {
             JS_UGLIFY: 'dev-uglify',                        // JS混淆
             JS_CONCAT: 'dev-concat',                        // JS文件合并
         },
+        IMAGE: {
+            MAIN: 'dev-image',
+            IMAGE_MIN: 'dev-image-min',
+            base64: 'dev-base64'
+        },
         // 服务/页面启动/刷新相关任务名
         SERVER: 'server',                                   // 服务
         NODEMON: 'nodemon',                                 // 运行NodeJS服务器
@@ -222,7 +227,7 @@ const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath
 /* clean 文件清除任务 */
 gulp.task(TASK.BUILD.CLEAN, () => {
     return gulp.src([prdPath, revPath.root], {read: false})
-        .pipe(clean());
+                .pipe(clean());
 });
 
 
@@ -357,6 +362,12 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
 
 
 
+/* image 任务 */
+gulp.task(TASK.DEV.IMAGE.MAIN, () => {
+    return gulp.src(`${srcPath}${imagesPath}*`)
+                .pipe(gulp.dest(`${devPath}${imagesPath}`));
+});
+
 
 
 /* 启动 server 任务 */
@@ -381,7 +392,7 @@ gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
         proxy: ROUTES.PROXY,
         files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
         browser: "chrome",
-        port: ROUTES.port
+        port: ROUTES.PORT
     });
 });
 
@@ -395,4 +406,4 @@ gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
 
 
 /* dev 合并构建任务 */
-gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
+gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
