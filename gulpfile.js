@@ -23,7 +23,7 @@
  * 16.https://github.com/ai/browserslist#queries                        【gulp-autoprefixer的browsers参数详解】
  * 17.https://segmentfault.com/q/1010000004234745?_ea=556298            【各种gulp配置文件】
  * 18.https://www.jianshu.com/p/8ebf9b6aee60                            【替换css 中的 url，解决打包后 background-image 引用图片路径出错问题】
- *
+ * 19.https://segmentfault.com/a/1190000006190814?utm_source=weekly&utm_medium=email&utm_campaign=email_weekly#articleHeader0       【教你从零开始搭建一款前端脚手架工具】
  *
  */
 
@@ -75,6 +75,9 @@ const browserSync = require('browser-sync');
 
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
+const replace = require('gulp-replace');                    // 替换指定文件的指定内容，https://www.npmjs.com/package/gulp-replace
+const changed = require('gulp-changed');                    // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
+const cheerio = require('cheerio');
 const watchify = require('watchify');
 const webpack = require('webpack');                         // webpack
 const open = require('open');                               // 打开浏览器
@@ -112,10 +115,10 @@ const PATH_CONFIG = {
     },
     htmlManifestPath: 'temp/',                              // 作为静态css资源映射替换的临时存储文件夹
     revPath: {                                              // 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
-        fileName: 'rev-manifest.json',                      // 生成的rev映射文件名
         root: 'rev/',                                       // 根目录
-        jsrev: 'rev/jsrev',
-        cssrev: 'rev/cssrev'
+        fileName: {                                         // 生成的rev映射文件名
+            css: 'css-manifest.json'
+        }
     }
 };
 const TASK = {
@@ -227,28 +230,33 @@ const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath
 /* clean 文件清除任务 */
 gulp.task(TASK.BUILD.CLEAN, () => {
     return gulp.src([prdPath, revPath.root], {read: false})
-                .pipe(clean());
+        .pipe(clean());
 });
 
 
 /* style 任务 */
 gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
-                .pipe(sass().on('error', sass.logError))  // sass 文件编译
-                .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
-                .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.BUILD)) // 替换 css 样式文件中的 url 地址
-                .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
-                .pipe(cssmin()) // css 压缩
-                .pipe(rev())    // 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-                .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
-                .pipe(rev.manifest(revPath.fileName))   // 生成JSON的映射表
-                .pipe(gulp.dest(`${revPath.cssrev}`));  // 装填JSON映射表
+        .pipe(sass().on('error', sass.logError))  // sass 文件编译
+        .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
+        .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.BUILD)) // 替换 css 样式文件中的 url 地址
+        .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
+        .pipe(cssmin()) // css 压缩
+        .pipe(rev())    // 装填生产环境之前先对文件名加md5后缀，防止本地缓存
+        .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
+        .pipe(rev.manifest(`${revPath.fileName.css}`, {}))   // 生成JSON的映射表
+        .pipe(gulp.dest(`${revPath.root}`));  // 装填JSON映射表
 });
 // 通过样式映射表修改html文件上引用的css文件路径
 gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
-                .pipe(revCollector())   // 替换静态资源MD5文件名
-                .pipe(gulp.dest(`${htmlManifestPath}`));    // 将替换后的html文件装填到新目录
+        .pipe(revCollector({
+            replaceReved: true,
+            dirReplacements: {
+                'sass/': '/dist/css'
+            }
+        }))   // 替换静态资源MD5文件名
+        .pipe(gulp.dest(`${htmlManifestPath}`));    // 将替换后的html文件装填到新目录
 });
 
 /* JS 任务 */
@@ -300,15 +308,15 @@ gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
 gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
     // gulp-imagemin 压缩jpg格式的图片，变化不大，打包png格式图片有效果
     return gulp.src(`${srcPath}${imagesPath}*`)
-                .pipe(imagemin())
-                .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+        .pipe(imagemin())
+        .pipe(gulp.dest(`${prdPath}${imagesPath}`));
 });
 
 
 /* build 合并构建任务 */
 gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
-    gulp.src([htmlManifestPath], {read: false})
-        .pipe(clean());
+    // gulp.src([htmlManifestPath], {read: false})
+    //     .pipe(clean());
 });
 
 
@@ -336,7 +344,7 @@ gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.
 /* clean 文件清除任务 */
 gulp.task(TASK.DEV.CLEAN, () => {
     return gulp.src([devPath], {read: false})
-                .pipe(clean());
+        .pipe(clean());
 });
 
 
@@ -345,11 +353,11 @@ gulp.task(TASK.DEV.CLEAN, () => {
 /* style 任务 */
 gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
     return gulp.src(`${srcPath}${stylePath.sassEntry}`)
-                .pipe(sass().on('error', sass.logError))  // sass 文件编译
-                .pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
-                .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
-                .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
-                .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+        .pipe(sass().on('error', sass.logError))  // sass 文件编译
+        .pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
+        .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
+        .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
+        .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
 
@@ -365,7 +373,7 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
 /* image 任务 */
 gulp.task(TASK.DEV.IMAGE.MAIN, () => {
     return gulp.src(`${srcPath}${imagesPath}*`)
-                .pipe(gulp.dest(`${devPath}${imagesPath}`));
+        .pipe(gulp.dest(`${devPath}${imagesPath}`));
 });
 
 
