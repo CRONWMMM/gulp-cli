@@ -6,6 +6,7 @@
  * 相关参考文件：
  *
  * 1.https://www.jianshu.com/p/9723ca2a2afd                             【gulp 入门】
+ * 2.http://www.ydcss.com/archives/424                                  【gulp教程之gulp中文API】
  * 2.https://segmentfault.com/a/1190000004915222                        【Gulp资料大全 入门、插件、脚手架、包清单】
  * 3.https://segmentfault.com/a/1190000009467932                        【Gulp.src排除一些文件的路径规则】
  * 4.https://csspod.com/using-browserify-with-gulp/                     【在 Gulp 中使用 Browserify】
@@ -24,10 +25,11 @@
  * 17.https://segmentfault.com/q/1010000004234745?_ea=556298            【各种gulp配置文件】
  * 18.https://www.jianshu.com/p/8ebf9b6aee60                            【替换css 中的 url，解决打包后 background-image 引用图片路径出错问题】
  * 19.https://segmentfault.com/a/1190000006190814?utm_source=weekly&utm_medium=email&utm_campaign=email_weekly#articleHeader0       【教你从零开始搭建一款前端脚手架工具】
- *
+ * 20.https://www.gulpjs.com.cn/docs/recipes/running-task-steps-per-folder/     【gulp每个文件夹生成单独一个文件】
  */
 
-
+const fs = require('fs');
+const path = require('path');
 const gulp = require('gulp');
 
 /* 文件名重命名处理，主要解决文件缓存 -------------------------------------------------------------------------- */
@@ -79,6 +81,7 @@ const replace = require('gulp-replace');                    // 替换指定文�
 const changed = require('gulp-changed');                    // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
 const cheerio = require('cheerio');
 const watchify = require('watchify');
+const merge = require('merge-stream');                      // 流处理
 const webpack = require('webpack');                         // webpack
 const open = require('open');                               // 打开浏览器
 
@@ -250,12 +253,13 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
 // 通过样式映射表修改html文件上引用的css文件路径
 gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
-        .pipe(revCollector({
-            replaceReved: true,
-            dirReplacements: {
-                'sass/': '/dist/css'
-            }
-        }))   // 替换静态资源MD5文件名
+        .pipe(revCollector())   // 替换静态资源MD5文件名
+        // 替换link文件的href引用地址
+        .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, "$1../css/$2$3"))
+        // 替换除了script文件的其他src资源引用地址
+        // 图片资源
+        .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, "$1../static/img/$2$3$4"))
+        // 视音频资源后面再加
         .pipe(gulp.dest(`${htmlManifestPath}`));    // 将替换后的html文件装填到新目录
 });
 
@@ -306,11 +310,27 @@ gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
 
 /* image 任务 */
 gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
-    // gulp-imagemin 压缩jpg格式的图片，变化不大，打包png格式图片有效果
-    return gulp.src(`${srcPath}${imagesPath}*`)
-        .pipe(imagemin())
-        .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+    let folders = getFolders(`${srcPath}${imagesPath}`);
+    console.log(folders);
+    if (folders.length > 0) {
+        let tasks = folders.map(folder => {
+            return gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*'))
+                .pipe(imagemin())
+                .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+        });
+        tasks.unshift(gulp.src([`${srcPath}${imagesPath}*.jpg`, `${srcPath}${imagesPath}*.jpeg`, `${srcPath}${imagesPath}*.png`, `${srcPath}${imagesPath}*.gif`])
+            .pipe(imagemin())
+            .pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+        return merge(tasks);
+    } else {
+        // gulp-imagemin 压缩jpg格式的图片，变化不大，打包png格式图片有效果
+        return gulp.src(`${srcPath}${imagesPath}*`)
+            .pipe(imagemin())
+            .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+    }
 });
+
+
 
 
 /* build 合并构建任务 */
@@ -415,3 +435,13 @@ gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
 
 /* dev 合并构建任务 */
 gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
+
+
+
+
+/* utils */
+function getFolders(dir) {
+    return fs.readdirSync(dir).filter(file => {
+        return fs.statSync(path.join(dir, file)).isDirectory();
+    })
+}
