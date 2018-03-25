@@ -3,6 +3,27 @@
  * author: CRONWMMM
  * github: https://github.com/CRONWMMM
  *
+ *
+ * 项目介绍：
+ *   目前的SPA应用基本都有框架自带的一套脚手架工具自动生成，但是对于非SPA应用这种构建工具就很稀缺，
+ * 就算有的那些个人感觉并不好用，主要是对 ES6/7语法/模块化 的支持程度并不好，无法使用原生的ES6和
+ * import静态编译。针对这一现状，我写了一套 gulp + webpack 自动构建工具，主要针对那些非 SPA的
+ * 应用构建。
+ *
+ *
+ * 功能介绍：
+ * 1.将 gulp 任务流以配置文件的形式提取出来，尽量最大范围实现灵活可配置性。
+ * 2.相比于网上别的开源 gulp 脚手架，实现了对 ES6 写法的全面支持，无论是 语法、API 还是 import
+ *   模块化引用，目前可能并未支持ES7，后面可以加上，包括ESlint检查工具 和单元测试，后面也可以加上。
+ * 3.由于实现了ES6模块静态编译，所有libs全是从node_modules里找的，所以不需要用到bower。
+ * 4.所有js的入口文件在webpack文件里配置完成以后，不需要在 html 页面里声明，webpack会自动inject
+ * 5.样式文件可同时支持 css/sass/less/stylus 等写法，在配置文件中定义即可。
+ * 6.autoPrefixer自动补全样式前缀。
+ * 7.样式文件、脚本文件等静态资源均通过md5重命名，防止浏览器缓存
+ * 8.更方便的 link-href img-src background-imageURL 等路径地址配置，只要在项目中写资源名称，
+ *   例如 index.css  logo.jpg  脚手架会根据配置文件自动补全路径
+ *
+ *
  * 相关参考文件：
  *
  * 1.https://www.jianshu.com/p/9723ca2a2afd                             【gulp 入门】
@@ -255,53 +276,17 @@ gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
         .pipe(revCollector())   // 替换静态资源MD5文件名
         // 替换link文件的href引用地址
-        .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, "$1../css/$2$3"))
+        .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
         // 替换除了script文件的其他src资源引用地址
         // 图片资源
-        .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, "$1../static/img/$2$3$4"))
+        .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, "$1../static/images/$2$3$4"))
         // 视音频资源后面再加
         .pipe(gulp.dest(`${htmlManifestPath}`));    // 将替换后的html文件装填到新目录
 });
 
 /* JS 任务 */
-/* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是CMD模块，浏览器不能解析，遂卒 */
-/*
- gulp.task('js', () =>
- gulp.src(`${srcPath}js/entries/vendors.js`)
- .pipe(babel({
- presets: ['env'],
- plugins: ['transform-runtime']
- }))
- .pipe(webpack())
- .pipe(gulp.dest(`${devPath}`))
- );
- */
-
-
-/* 第二版，用browserify，打包出来的文件贼鸡巴大，你感动吗？我不敢动不敢动。。。
- gulp.task(TASK.SCRIPT.main, [TASK.CLEAN], () => {
-
- return browserify({
- entries: `${srcPath}js/entries/vendors.js`  //指定打包入口文件
- }).plugin(standalonify, {       //使打包后的js文件符合UMD规范并指定外部依赖包
- name: 'FlareJ'
- }).transform(babelify, {  //此处babel的各配置项格式与.babelrc文件相同
- presets: [
- 'env'
- ],
- plugins: [
- 'transform-runtime',
- 'external-helpers',  //将es6代码转换后使用的公用函数单独抽出来保存为babelHelpers
- ]
- }).bundle()  //合并打包
- .pipe(source('vendors.js'))
- .pipe(buffer())
- // .pipe(uglify())
- .pipe(gulp.dest(`${devPath}`));
-
- });
- */
-
+/* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是commonJS模块，浏览器不能解析。 */
+/* 第二版，用browserify，打包出来的文件太大。*/
 /* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
 gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
     webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
@@ -309,25 +294,21 @@ gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
 
 
 /* image 任务 */
+// 这块需要做一个文件抽取，就是将 static/images/**/* 里不同层级文件夹内的文件抽出来，统一放到一个最后指定的文件夹里
+// 静态资源的文件夹嵌套最多允许两层，也就是说最多能探到 static/images/header/logo.jpg 这种层级的文件
+// 再往下，恕在下无能为力
 gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
-    let folders = getFolders(`${srcPath}${imagesPath}`);
-    console.log(folders);
+    // 检测对应搜索路径下的文件夹
+    let folders = getFolders(`${srcPath}${imagesPath}`),
+        tasks = [];
+    // 先检测 static/images/ 下的文件
+    tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+    // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
     if (folders.length > 0) {
-        let tasks = folders.map(folder => {
-            return gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*'))
-                .pipe(imagemin())
-                .pipe(gulp.dest(`${prdPath}${imagesPath}`));
-        });
-        tasks.unshift(gulp.src([`${srcPath}${imagesPath}*.jpg`, `${srcPath}${imagesPath}*.jpeg`, `${srcPath}${imagesPath}*.png`, `${srcPath}${imagesPath}*.gif`])
-            .pipe(imagemin())
-            .pipe(gulp.dest(`${prdPath}${imagesPath}`)));
-        return merge(tasks);
-    } else {
-        // gulp-imagemin 压缩jpg格式的图片，变化不大，打包png格式图片有效果
-        return gulp.src(`${srcPath}${imagesPath}*`)
-            .pipe(imagemin())
-            .pipe(gulp.dest(`${prdPath}${imagesPath}`));
+        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*')).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+        tasks.push(...taskList);
     }
+    return merge(tasks);
 });
 
 
