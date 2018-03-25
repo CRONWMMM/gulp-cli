@@ -105,138 +105,9 @@ const merge = require('merge-stream');                      // 流处理
 const webpack = require('webpack');                         // webpack
 const open = require('open');                               // 打开浏览器
 
-
-
-
-
-
-
-const CONTROL_CONFIG = {
-    need_dev: true,                                         // 是否需要使用dev环境/是否需要打包一份build文件夹
-    random_file_name: true,                                 // 是否需要随机文件名
-    source_maps: {                                          // 是否需要生成map映射文件
-        js_map: true,
-        style_map: true
-    }
-};
-const PATH_CONFIG = {
-    serverPath: 'server/',                                  // 服务路径
-    libPath: '',                                            // 依赖库路径
-    srcPath: 'src/',                                        // 源码路径
-    devPath: 'build/',                                      // 开发环境
-    prdPath: 'dist/',                                       // 生产环境
-    staticPath: 'static/',                                  // 静态资源路径
-    imagesPath: 'static/images/',                           // 图片路径
-    stylePath: {
-        sassEntry: 'style/sass/*.scss',                     // sass入口文件
-        lessEntry: 'style/less/*.less',
-        stylusEntry: '',
-        outputFolder: 'css'                                 // css的输出文件夹
-    },
-    scriptPath: {
-        mainEntry: 'js/main.js'
-    },
-    htmlManifestPath: 'temp/',                              // 作为静态css资源映射替换的临时存储文件夹
-    revPath: {                                              // 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
-        root: 'rev/',                                       // 根目录
-        fileName: {                                         // 生成的rev映射文件名
-            css: 'css-manifest.json'
-        }
-    }
-};
-const TASK = {
-    BUILD: {
-        MAIN: 'build',
-        CLEAN: 'build-clean',
-        HTML: 'build-html',
-        STYLE: {
-            MAIN: 'build-css',
-            SASS: 'build-sass',                             // sass编译
-            LESS: 'build-less',                             // less编译
-            STYLUS: 'build-stylus',                         // stylus编译
-            MANIFEST: 'dev-manifest'
-        },
-        SCRIPT: {
-            MAIN: 'build-js',
-            JS_UGLIFY: 'build-uglify',                      // JS混淆
-            JS_CONCAT: 'build-concat',                      // JS文件合并
-        },
-        IMAGE: {
-            MAIN: 'build-image',
-            IMAGE_MIN: 'build-image-min',
-            base64: 'build-base64'
-        }
-    },
-    DEV: {
-        MAIN: 'dev',
-        CLEAN: 'dev-clean',
-        HTML: 'dev-html',
-        STYLE: {
-            MAIN: 'dev-css',
-            SASS: 'dev-sass',                               // sass编译
-            LESS: 'dev-less',                               // less编译
-            STYLUS: 'dev-stylus',                           // stylus编译
-        },
-        SCRIPT: {
-            MAIN: 'dev-js',
-            JS_UGLIFY: 'dev-uglify',                        // JS混淆
-            JS_CONCAT: 'dev-concat',                        // JS文件合并
-        },
-        IMAGE: {
-            MAIN: 'dev-image',
-            IMAGE_MIN: 'dev-image-min',
-            base64: 'dev-base64'
-        },
-        // 服务/页面启动/刷新相关任务名
-        SERVER: 'server',                                   // 服务
-        NODEMON: 'nodemon',                                 // 运行NodeJS服务器
-        BROWSER_SYNC: 'browser-sync',                       // 浏览器同步
-        WATCH: 'watch',                                     // 监听
-    }
-};
-const ROUTES = {
-    PROXY: 'http://localhost:3000',
-    PORT: 7000,
-};
-
-const AUTO_PREFIXER_CONFIG = {                              // gulp-autoprefixer 配置文件
-    DEV: {
-        browsers: ['last 2 versions', 'Android >= 4.0', 'iOS 7'],
-        cascade: false
-    },
-    BUILD: {
-        browsers: ['last 2 versions', 'Android >= 4.0', 'iOS 7'],
-        cascade: false
-    }
-};
-
-const BASE64_CONFIG = {                                     // gulp-base64 配置文件
-    DEV: {
-        extensions: ['svg', 'png', /\.jpg#datauri$/i],
-        maxImageSize: 20 * 1024,  // 字节
-        debug: true
-    },
-    BUILD: {
-        extensions: ['svg', 'png', /\.jpg#datauri$/i],
-        maxImageSize: 20 * 1024,  // 字节
-        debug: false
-    }
-};
-
-const MODIFY_CSS_URLS_CONFIG = {                            // gulp-modify-css-urls 配置
-    DEV: {
-        modify(url, filePath) {   // 替换 css 样式文件中的 url 地址，这块需要自己配置个性化处理函数
-            return `../${imagesPath}${url}`;
-        }
-    },
-    BUILD: {
-        modify(url, filePath) {   // 替换 css 样式文件中的 url 地址，这块需要自己配置个性化处理函数
-            return `../${imagesPath}${url}`;
-        }
-    }
-};
-
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, htmlManifestPath } = PATH_CONFIG;
+/* 配置文件 ------------------------------------------------------------------------------------------------ */
+const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
+const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -278,7 +149,7 @@ gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
         // 图片资源
         .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
         // 视音频资源后面再加
-        .pipe(gulp.dest(`${htmlManifestPath}`));    // 将替换后的html文件装填到新目录
+        .pipe(gulp.dest(`${tempPath.build}`));    // 将替换后的html文件装填到新目录
 });
 
 /* JS 任务 */
@@ -302,7 +173,7 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
     tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
     // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
     if (folders.length > 0) {
-        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*')).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
         tasks.push(...taskList);
     }
     return merge(tasks);
@@ -313,8 +184,8 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
 
 /* build 合并构建任务 */
 gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
-    // gulp.src([htmlManifestPath], {read: false})
-    //     .pipe(clean());
+    gulp.src([tempPath.build], {read: false})
+        .pipe(clean());
 });
 
 
@@ -358,11 +229,23 @@ gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
         .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
+/* style 任务 */
+// 修改html文件上引用的 css 文件路径和 src 静态资源路径
+gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
+    return gulp.src(`${srcPath}**/*.html`)
+    // 替换link文件的href引用地址
+        .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
+        // 替换除了script文件的其他src资源引用地址
+        // 图片资源
+        .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+        // 视音频资源后面再加
+        .pipe(gulp.dest(`${tempPath.dev}`));    // 将替换后的html文件装填到新目录
+});
 
 
 
 /* JS 任务，还少了一个source-map，后面补充 */
-gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
+gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
     webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
 });
 
@@ -370,10 +253,18 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.STYLE.SASS], () => {
 
 /* image 任务 */
 gulp.task(TASK.DEV.IMAGE.MAIN, () => {
-    return gulp.src(`${srcPath}${imagesPath}*`)
-        .pipe(gulp.dest(`${devPath}${imagesPath}`));
+    // 检测对应搜索路径下的文件夹
+    let folders = getFolders(`${srcPath}${imagesPath}`),
+        tasks = [];
+    // 先检测 static/images/ 下的文件
+    tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+    // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
+    if (folders.length > 0) {
+        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+        tasks.push(...taskList);
+    }
+    return merge(tasks);
 });
-
 
 
 /* 启动 server 任务 */
@@ -412,7 +303,10 @@ gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
 
 
 /* dev 合并构建任务 */
-gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
+gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
+    gulp.src([tempPath.dev], {read: false})
+        .pipe(clean());
+});
 
 
 
