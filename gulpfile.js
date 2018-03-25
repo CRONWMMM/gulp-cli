@@ -27,25 +27,28 @@
  *
  * 1.https://www.jianshu.com/p/9723ca2a2afd                             【gulp 入门】
  * 2.http://www.ydcss.com/archives/424                                  【gulp教程之gulp中文API】
- * 2.https://segmentfault.com/a/1190000004915222                        【Gulp资料大全 入门、插件、脚手架、包清单】
- * 3.https://segmentfault.com/a/1190000009467932                        【Gulp.src排除一些文件的路径规则】
- * 4.https://csspod.com/using-browserify-with-gulp/                     【在 Gulp 中使用 Browserify】
- * 5.https://segmentfault.com/a/1190000004917668                        【基于 Gulp + Browserify 构建 ES6 环境下的自动化前端项目】
- * 6.http://blog.csdn.net/yummy_go/article/details/51144506             【gulp前端构建工具知识点及深析】
- * 7.https://www.jianshu.com/p/9724c47b406c                             【gulp & webpack整合】
- * 8.https://www.npmjs.com/package/gulp-webpack                         【gulp-webpack npm介绍】
- * 9.https://www.cnblogs.com/maskmtj/archive/2016/07/21/5597307.html    【gulp + webpack构建配置】
- * 10.http://blog.csdn.net/xiangzhihong8/article/details/53993980       【gulp + webpack 工具整合介绍】
- * 11.http://blog.csdn.net/qq_16559905/article/details/79404173         【Webpack 3.X - 4.X 升级记录】
- * 12.https://www.cnblogs.com/wonyun/p/6030090.html                     【html-webpack-plugin详解】
- * 13.https://segmentfault.com/a/1190000007294861                       【html-webpack-plugin用法全解】
- * 14.http://blog.csdn.net/keliyxyz/article/details/51513114            【webpack入门（六）——html-webpack-plugin】
- * 15.https://segmentfault.com/a/1190000006085774                       【gulp之JS、CSS、HTML、图片压缩以及版本更新】
- * 16.https://github.com/ai/browserslist#queries                        【gulp-autoprefixer的browsers参数详解】
- * 17.https://segmentfault.com/q/1010000004234745?_ea=556298            【各种gulp配置文件】
- * 18.https://www.jianshu.com/p/8ebf9b6aee60                            【替换css 中的 url，解决打包后 background-image 引用图片路径出错问题】
- * 19.https://segmentfault.com/a/1190000006190814?utm_source=weekly&utm_medium=email&utm_campaign=email_weekly#articleHeader0       【教你从零开始搭建一款前端脚手架工具】
- * 20.https://www.gulpjs.com.cn/docs/recipes/running-task-steps-per-folder/     【gulp每个文件夹生成单独一个文件】
+ * 3.https://segmentfault.com/a/1190000004915222                        【Gulp资料大全 入门、插件、脚手架、包清单】
+ * 4.https://segmentfault.com/a/1190000009467932                        【Gulp.src排除一些文件的路径规则】
+ * 5.https://csspod.com/using-browserify-with-gulp/                     【在 Gulp 中使用 Browserify】
+ * 6.https://segmentfault.com/a/1190000004917668                        【基于 Gulp + Browserify 构建 ES6 环境下的自动化前端项目】
+ * 7.http://blog.csdn.net/yummy_go/article/details/51144506             【gulp前端构建工具知识点及深析】
+ * 8.https://www.jianshu.com/p/9724c47b406c                             【gulp & webpack整合】
+ * 9.https://www.npmjs.com/package/gulp-webpack                         【gulp-webpack npm介绍】
+ * 10.https://www.cnblogs.com/maskmtj/archive/2016/07/21/5597307.html    【gulp + webpack构建配置】
+ * 12.http://blog.csdn.net/xiangzhihong8/article/details/53993980       【gulp + webpack 工具整合介绍】
+ * 13.http://blog.csdn.net/qq_16559905/article/details/79404173         【Webpack 3.X - 4.X 升级记录】
+ * 14.https://www.cnblogs.com/wonyun/p/6030090.html                     【html-webpack-plugin详解】
+ * 15.https://segmentfault.com/a/1190000007294861                       【html-webpack-plugin用法全解】
+ * 16.http://blog.csdn.net/keliyxyz/article/details/51513114            【webpack入门（六）——html-webpack-plugin】
+ * 17.https://segmentfault.com/a/1190000006085774                       【gulp之JS、CSS、HTML、图片压缩以及版本更新】
+ * 18.https://github.com/ai/browserslist#queries                        【gulp-autoprefixer的browsers参数详解】
+ * 19.https://segmentfault.com/q/1010000004234745?_ea=556298            【各种gulp配置文件】
+ * 20.https://www.jianshu.com/p/8ebf9b6aee60                            【替换css 中的 url，解决打包后 background-image 引用图片路径出错问题】
+ * 21.https://segmentfault.com/a/1190000006190814?utm_source=weekly&utm_medium=email&utm_campaign=email_weekly#articleHeader0       【教你从零开始搭建一款前端脚手架工具】
+ * 22.https://www.jianshu.com/p/038c6b91f667                            【Yeoman，教你快速打造自己的脚手架】
+ * 23.https://www.gulpjs.com.cn/docs/recipes/running-task-steps-per-folder/     【gulp每个文件夹生成单独一个文件】
+ *
+ *
  */
 
 const fs = require('fs');

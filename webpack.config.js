@@ -3,12 +3,13 @@ const resolve = dir => path.join(__dirname, dir);
 
 /* webpack配置 */
 module.exports = {
-	/* 统一JS模块入口 --------------------------------------------------------------------- */
+    /* 统一JS模块入口 --------------------------------------------------------------------- */
     ENTRY: {
-        main: resolve('src/js/index.js')
+        main: resolve('src/js/index.js'),
+        login: resolve('src/js/login.js')
     },
 
-	/* 开发环境 --------------------------------------------------------------------------- */
+    /* 开发环境 --------------------------------------------------------------------------- */
     DEV: {
         OUTPUT: {
             path: resolve('build/js'),
@@ -25,14 +26,15 @@ module.exports = {
                 chunksSortMode: 'dependency'
             },{
                 filename: path.resolve('build/views/login.html'),
+                template: resolve('temp-dev/views/login.html'),
                 inject: true,
-                chunks: ['']
+                chunks: ['login', 'vendor', 'manifest']
             }
         ]
     },
 
 
-	/* 生产环境 --------------------------------------------------------------------------- */
+    /* 生产环境 --------------------------------------------------------------------------- */
     BUILD: {
         OUTPUT: {
             path: resolve('dist/js'),
@@ -49,8 +51,9 @@ module.exports = {
                 chunksSortMode: 'dependency'
             },{
                 filename: path.resolve('dist/views/login.html'),
+                template: resolve('temp-build/views/login.html'),
                 inject: true,
-                chunks: ['']
+                chunks: ['login','vendor','manifest']
             }
         ]
     },
