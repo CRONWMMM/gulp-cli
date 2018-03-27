@@ -30,7 +30,12 @@ module.exports = {
                 inject: true,
                 chunks: ['login', 'vendor', 'manifest']
             }
-        ]
+        ],
+        /**
+         * Source Maps
+         */
+        // https://webpack.js.org/configuration/devtool/#development
+        DEVTOOL: 'eval-source-map',
     },
 
 
@@ -55,6 +60,13 @@ module.exports = {
                 inject: true,
                 chunks: ['login','vendor','manifest']
             }
-        ]
+        ],
+        /**
+         * Source Maps
+         */
+        // productionSourceMap 字段开启，生产环境下也能打开 sourceMap 映射，不过推荐是 false，讲道理线上环境不应该能看到源码
+        PRODUCTION_SOURCEMAP: false,
+        // https://webpack.js.org/configuration/devtool/#production
+        DEVTOOL: '#source-map',
     },
 };

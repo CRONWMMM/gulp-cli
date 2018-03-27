@@ -26,6 +26,8 @@ module.exports = {
             }
         ]
     },
+    // cheap-module-eval-source-map is faster for development
+    devtool: DEV.DEVTOOL,
     plugins: [
         new webpack.ProvidePlugin({
             $: 'jquery'

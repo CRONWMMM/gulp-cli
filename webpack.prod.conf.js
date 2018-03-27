@@ -26,6 +26,7 @@ module.exports = {
             }
         ]
     },
+    devtool: BUILD.PRODUCTION_SOURCEMAP ? BUILD.DEVTOOL : false,
     plugins: [
         new webpack.ProvidePlugin({
             $: 'jquery'
