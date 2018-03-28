@@ -97,7 +97,7 @@ const nodemon = require('gulp-nodemon');                    // nodemon，启动n
 
 /* 热更新 -------------------------------------------------------------------------------------------------- */
 const browserSync = require('browser-sync');
-
+const reload = browserSync.reload;
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const replace = require('gulp-replace');                    // 替换指定文件的指定内容，https://www.npmjs.com/package/gulp-replace
@@ -110,7 +110,7 @@ const open = require('open');                               // 打开浏览器
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -131,7 +131,7 @@ gulp.task(TASK.BUILD.CLEAN, () => {
 
 /* style 任务 */
 gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
-    return gulp.src(`${srcPath}${stylePath.sassEntry}`)
+    return gulp.src(`${srcPath}${stylePath.sass.entry}`)
         .pipe(sass().on('error', sass.logError))  // sass 文件编译
         .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
         .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.BUILD)) // 替换 css 样式文件中的 url 地址
@@ -143,7 +143,7 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
         .pipe(gulp.dest(`${revPath.root}`));  // 装填JSON映射表
 });
 // 通过样式映射表修改html文件上引用的css文件路径
-gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
+gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.SASS], () => {
     return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
         .pipe(revCollector())   // 替换静态资源MD5文件名
         // 替换link文件的href引用地址
@@ -159,7 +159,7 @@ gulp.task(TASK.BUILD.STYLE.MANIFEST, [TASK.BUILD.STYLE.SASS], () => {
 /* 第一版，用gulp-babel编译ES6语法，但由于编译出来的是commonJS模块，浏览器不能解析。 */
 /* 第二版，用browserify，打包出来的文件太大。*/
 /* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
-gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.STYLE.MANIFEST], () => {
+gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.HTML], () => {
     webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
 });
 
@@ -186,7 +186,7 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
 
 
 /* build 合并构建任务 */
-gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.STYLE.MANIFEST, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
+gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.HTML, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
     gulp.src([tempPath.build], {read: false})
         .pipe(clean());
 });
@@ -201,20 +201,10 @@ gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.
 
 
 
-
-
-
-
-
-
-
-
-
-
-/* 开发环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
+/* 开发环境 (初始 npm run dev) ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
 
 /* clean 文件清除任务 */
-gulp.task(TASK.DEV.CLEAN, () => {
+gulp.task(TASK.DEV.CLEAN.ALL, () => {
     return gulp.src([devPath], {read: false})
         .pipe(clean());
 });
@@ -223,16 +213,16 @@ gulp.task(TASK.DEV.CLEAN, () => {
 
 
 /* style 任务 */
-gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN], () => {
-    return gulp.src(`${srcPath}${stylePath.sassEntry}`)
+gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
+    return gulp.src(`${srcPath}${stylePath.sass.entry}`)
         .pipe(sass().on('error', sass.logError))  // sass 文件编译
-        .pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
         .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
         .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
+        //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
         .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
 });
 
-/* style 任务 */
+/* html 任务 */
 // 修改html文件上引用的 css 文件路径和 src 静态资源路径
 gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
     return gulp.src(`${srcPath}**/*.html`)
@@ -270,7 +260,71 @@ gulp.task(TASK.DEV.IMAGE.MAIN, () => {
 });
 
 
-/* 启动 server 任务 */
+/* dev 合并构建任务 */
+gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
+    // gulp.src([tempPath.dev], {read: false})
+    //     .pipe(clean());
+});
+
+
+
+
+/* watch 文件文件改变执行的分任务 --------------------------------------------------------------------------------------------------------------------------------------------------------- */
+
+// html 任务
+gulp.task(TASK.DEV.RUNTIME_HTML, () => {
+    let tasks = [];
+    tasks.push(
+        gulp.src(`${srcPath}**/*.html`)
+            .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
+            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+            .pipe(gulp.dest(`${devPath}`)),
+
+        gulp.src(`${devPath}**/*.html`)
+            .pipe(gulp.dest(`${tempPath.dev}`))
+            .pipe(reload({stream: true}))
+    );
+    return merge(tasks);
+});
+
+
+// style 任务
+gulp.task(TASK.DEV.RUNTIME_STYLE.SASS, () => {
+    let tasks = [];
+    tasks.push(
+        // 清除原来的build/css下的样式文件
+        gulp.src([`${devPath}${stylePath.outputFolder}/**/*`], {read: false})
+            .pipe(clean()),
+
+        gulp.src(`${srcPath}${stylePath.sass.entry}`)
+            .pipe(sass().on('error', sass.logError))  // sass 文件编译
+            // .pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
+            .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
+            .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
+            .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`))
+            .pipe(reload({stream: true}))
+    );
+    return merge(tasks);
+});
+
+
+// script 任务
+gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
+    gulp.src([`${devPath}${scriptPath.root}`], {read: false})
+        .pipe(clean());
+});
+gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
+    webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+});
+
+
+
+
+
+
+
+
+/* 启动 server 任务 --------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 // 启动NodeJS服务文件
 gulp.task(TASK.DEV.NODEMON, (cb) => {
     let started = false;
@@ -287,28 +341,22 @@ gulp.task(TASK.DEV.NODEMON, (cb) => {
 
 // 浏览器同步，用7000端口去代理Express的3008端口
 gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
-    return browserSync.init({
+    browserSync.init({
         notify: false,//关闭页面通知
         proxy: ROUTES.PROXY,
-        files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
+        // files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
         browser: "chrome",
         port: ROUTES.PORT
     });
-});
 
-
-
-/* watch 监听任务 */
-gulp.task(TASK.DEV.WATCH, [TASK.DEV.NODEMON], () => {
-    return gulp.watch(`${config.srcPath}sass/**/*.scss`, ['sass']);
-});
-
-
-
-/* dev 合并构建任务 */
-gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
-    gulp.src([tempPath.dev], {read: false})
-        .pipe(clean());
+    // 监听模板文件
+    gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK.DEV.RUNTIME_HTML ]);
+    // 监听样式文件【sass】
+    gulp.watch(`${srcPath}${stylePath.sass.root}**/*.scss`, [ TASK.DEV.RUNTIME_STYLE.SASS ]);
+    // 监听脚本文件【js】
+    gulp.watch(`${srcPath}${scriptPath}**/*.js`, [ TASK.DEV.RUNTIME_SCRIPT.MAIN ]);
+    // 监听静态资源【image】
+    gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.IMAGE ]);
 });
 
 

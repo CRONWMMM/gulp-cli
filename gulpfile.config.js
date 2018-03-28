@@ -1,10 +1,10 @@
 
 const CONTROL_CONFIG = {
     need_dev: true,                                         // 是否需要使用dev环境/是否需要打包一份build文件夹
-        random_file_name: true,                                 // 是否需要随机文件名
-        source_maps: {                                          // 是否需要生成map映射文件
+    random_file_name: true,                                 // 是否需要随机文件名
+    source_maps: {                                          // 是否需要生成map映射文件
         js_map: true,
-            style_map: true
+        style_map: true
     }
 };
 const PATH_CONFIG = {
@@ -15,13 +15,26 @@ const PATH_CONFIG = {
     prdPath: 'dist/',                                       // 生产环境
     staticPath: 'static/',                                  // 静态资源路径
     imagesPath: 'static/images/',                           // 图片路径
+    templatePath: {
+        root: 'views/'
+    },
     stylePath: {
-        sassEntry: 'style/sass/*.scss',                     // sass入口文件
-        lessEntry: 'style/less/*.less',
-        stylusEntry: '',
+        sass: {
+            root: 'style/sass/',
+            entry: 'style/sass/*.scss'                      // sass入口文件
+        },
+        less: {
+            root: 'style/less/',
+            entry: 'style/less/*.less',
+        },
+        stylus: {
+            root: 'style/stylus/',
+            entry: '',
+        },
         outputFolder: 'css'                                 // css的输出文件夹
     },
     scriptPath: {
+        root: 'js/',
         mainEntry: 'js/main.js'
     },
     tempPath: {                                             // 作为静态css资源映射替换的临时存储文件夹
@@ -45,7 +58,7 @@ const TASK = {
             SASS: 'build-sass',                             // sass编译
             LESS: 'build-less',                             // less编译
             STYLUS: 'build-stylus',                         // stylus编译
-            MANIFEST: 'dev-manifest'
+            MANIFEST: 'build-manifest'
         },
         SCRIPT: {
             MAIN: 'build-js',
@@ -60,8 +73,14 @@ const TASK = {
     },
     DEV: {
         MAIN: 'dev',
-        CLEAN: 'dev-clean',
+        CLEAN: {
+            ALL: 'dev-clean',
+            SCRIPT: 'dev-clean-script'
+        },
+        RUNTIME_STYLE_CLEAN: 'dev-runtime-style-clean',
+        RUNTIME_SCRIPT_CLEAN: 'dev-runtime-script-clean',
         HTML: 'dev-html',
+        RUNTIME_HTML: 'dev-runtime-html',
         STYLE: {
             MAIN: 'dev-css',
             SASS: 'dev-sass',                               // sass编译
@@ -78,6 +97,19 @@ const TASK = {
             IMAGE_MIN: 'dev-image-min',
             base64: 'dev-base64'
         },
+        RUNTIME_STYLE: {
+            MAIN: 'dev-runtime-css',
+            SASS: 'dev-runtime-sass',                     // sass编译
+            LESS: 'dev-runtime-less',                     // less编译
+            STYLUS: 'dev-runtime-stylus',                 // stylus编译
+            MANIFEST: 'dev-runtime-manifest'
+        },
+        RUNTIME_SCRIPT: {
+            MAIN: 'dev-runtime-js',
+            JS_UGLIFY: 'dev-runtime-uglify',              // JS混淆
+            JS_CONCAT: 'dev-runtime-concat',              // JS文件合并
+        },
+
         // 服务/页面启动/刷新相关任务名
         SERVER: 'server',                                   // 服务
         NODEMON: 'nodemon',                                 // 运行NodeJS服务器
@@ -86,8 +118,8 @@ const TASK = {
     }
 };
 const ROUTES = {
-    PROXY: 'http://localhost:3000',
-    PORT: 7000,
+    PROXY: 'http://localhost:8080',
+    PORT: 8080,
 };
 const AUTO_PREFIXER_CONFIG = {                              // gulp-autoprefixer 配置文件
     DEV: {
