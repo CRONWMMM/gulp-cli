@@ -1,10 +1,10 @@
 
 const CONTROL_CONFIG = {
     need_dev: true,                                         // 是否需要使用dev环境/是否需要打包一份build文件夹
-        random_file_name: true,                                 // 是否需要随机文件名
-        source_maps: {                                          // 是否需要生成map映射文件
+    random_file_name: true,                                 // 是否需要随机文件名
+    source_maps: {                                          // 是否需要生成map映射文件
         js_map: true,
-            style_map: true
+        style_map: true
     }
 };
 const PATH_CONFIG = {
@@ -118,8 +118,8 @@ const TASK = {
     }
 };
 const ROUTES = {
-    PROXY: 'http://localhost:8080',
-    PORT: 8080,
+    PROXY: 'http://localhost:8000',
+    PORT: 8088,
 };
 const AUTO_PREFIXER_CONFIG = {                              // gulp-autoprefixer 配置文件
     DEV: {

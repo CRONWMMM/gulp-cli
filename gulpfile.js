@@ -62,7 +62,7 @@ const revCollector = require('gulp-rev-collector');         // 路径替换
 /* 图片处理 ------------------------------------------------------------------------------------------------ */
 const imagemin = require('gulp-imagemin');                  // 图片压缩
 const base64 = require('gulp-base64');                      // base64
-const spriter = require('gulp-css-spriter');                // 雪碧图
+// const spriter = require('gulp-css-spriter');             // 雪碧图
 
 /* html文件处理 -------------------------------------------------------------------------------------------- */
 const htmlmin = require('gulp-htmlmin');
@@ -70,18 +70,22 @@ const htmlmin = require('gulp-htmlmin');
 
 /* 样式文件处理 --------------------------------------------------------------------------------------------- */
 const cssmin = require('gulp-cssmin');                      // css压缩
-const cleanCss = require('gulp-clean-css');
-const px3rem = require("gulp-px3rem");                      // rem单位转换
+// const cleanCss = require('gulp-clean-css');
+// const px3rem = require("gulp-px3rem");                   // rem单位转换，如果是做移动页面可以开启
 const sass = require('gulp-sass');                          // 处理sass
 const autoPrefixer = require('gulp-autoprefixer');          // css样式自动加前缀
 const modifyCssUrls = require('gulp-modify-css-urls');      // css 文件中 url 引用路径处理
 
 /* 脚本文件处理 -------------------------------------------------------------------------------------------- */
-const babel = require('gulp-babel');                        // babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
-const browserify = require('browserify');                   // babel编译完之后使用了CommonJs的require语法来引用外部模块，所以需要再用browserify做一层转译
+// 下面几种脚本文件处理依赖是早期写的，后来直接用webpack打包JS，这些就用不到了
+// const babel = require('gulp-babel');                     // babel 使用方法：http://blog.csdn.net/qq243541844/article/details/51999901
+// const browserify = require('browserify');                // babel编译完之后使用了CommonJs的require语法来引用外部模块，所以需要再用browserify做一层转译
+// const uglify = require('gulp-uglify');                   // 混淆工具
+// const concat = require('gulp-concat');                   // js文件合并
+
+
+/* 代码校验 ------------------------------------------------------------------------------------------------- */
 // const jshint = require('gulp-jshint');                   // jshint
-const uglify = require('gulp-uglify');                      // 混淆工具
-const concat = require('gulp-concat');                      // js文件合并
 
 
 /* 文件清除 ------------------------------------------------------------------------------------------------- */
@@ -92,24 +96,26 @@ const clean = require('gulp-clean');
 const sourcemaps = require('gulp-sourcemaps');
 
 /* server服务 ---------------------------------------------------------------------------------------------- */
-const connect = require('gulp-connect');                    // 静态web的服务
+// const connect = require('gulp-connect');                 // 静态web的服务
 const nodemon = require('gulp-nodemon');                    // nodemon，启动node服务
 
 /* 热更新 -------------------------------------------------------------------------------------------------- */
-const browserSync = require('browser-sync');
+const browserSync = require('browser-sync').create();
 const reload = browserSync.reload;
 
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const replace = require('gulp-replace');                    // 替换指定文件的指定内容，https://www.npmjs.com/package/gulp-replace
-const changed = require('gulp-changed');                    // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
-const cheerio = require('cheerio');
-const watchify = require('watchify');
+const changed = require('gulp-changed');                  // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
+// const glob = require('glob');
+// const cheerio = require('cheerio');
+const cheerio = require('gulp-cheerio');
+// const watchify = require('watchify');
 const merge = require('merge-stream');                      // 流处理
 const webpack = require('webpack');                         // webpack
-const open = require('open');                               // 打开浏览器
+// const open = require('open');                            // 打开浏览器
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
-const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
+const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./cli/gulpfile.config');
 const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
 
 
@@ -160,7 +166,7 @@ gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.SASS], () => {
 /* 第二版，用browserify，打包出来的文件太大。*/
 /* 第三版，采用webpack构建模块化JS文件，貌似成功了 */
 gulp.task(TASK.BUILD.SCRIPT.MAIN, [TASK.BUILD.HTML], () => {
-    webpack(require('./webpack.prod.conf.js'), (err, stats) => {});
+    webpack(require('./cli/webpack.prod.conf.js'), (err, stats) => {});
 });
 
 
@@ -173,10 +179,16 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
     let folders = getFolders(`${srcPath}${imagesPath}`),
         tasks = [];
     // 先检测 static/images/ 下的文件
-    tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+    tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin({
+        progressive: true,// 无损压缩JPG图片
+        svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
+    })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
     // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
     if (folders.length > 0) {
-        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin({
+            progressive: true,// 无损压缩JPG图片
+            svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
+        })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
         tasks.push(...taskList);
     }
     return merge(tasks);
@@ -237,9 +249,14 @@ gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
 
 
 
-/* JS 任务，还少了一个source-map，后面补充 */
+/* JS 任务 */
 gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
-    webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+    webpack(require('./cli/webpack.dev.conf.js'), (err, status) => {
+        if (err != null) console.log('webpack bundle script error, information: ', err);
+        // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
+        gulp.src(`${devPath}**/*.html`)
+            .pipe(gulp.dest(`${tempPath.dev}`));
+    });
 });
 
 
@@ -273,15 +290,41 @@ gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRI
 
 // html 任务
 gulp.task(TASK.DEV.RUNTIME_HTML, () => {
-    let tasks = [];
+    let tasks = [],
+        scriptSrcList = [];
+    // 由于script标签其实是在webpack里inject的，所以srcPath 下的模板文件里并没有对应的脚本引用
+    // 所以要从tempPath下的脚本文件里先拿脚本引用，再和srcPath下修改过的文件合并后，插入到build目录下
+    // 这个性能最高的一种方法，不然要重新用webpack打包在inject 浪费性能
     tasks.push(
+        gulp.src(`${tempPath.dev}**/*.html`)
+            .pipe(cheerio(($, file) => {
+                // 这块也是必要的，和merge-script的流处理机制有关
+                // 这个处理机制并不是将所有html文件全部读完再走到下一个流程，
+                // 而是限度一个文件，读完之后到下一个流程，然后一套走完再回来循环下一个文件
+                // 所以每次拿新的scriptSrcList之前需要清空数据，从而保证每一次的script数据都是当前正在处理文件的
+                // 从而避免了将其他页面的引用文件多次打包的情况。
+                scriptSrcList = [];
+                $('script').each(function() {
+                    // 这块有坑，注意不能写成箭头函数，不然this是无法绑定的
+                    let $script = $(this),
+                        src = $script.attr('src');
+                    scriptSrcList.push(src);
+                });
+            })),
+
         gulp.src(`${srcPath}**/*.html`)
+        // 这块是关键，修改过的文件才能放行
+            .pipe(changed(`${devPath}`))
+            .pipe(cheerio(($, file) => {
+                let $body = $('body');
+                scriptSrcList.forEach(item => {
+                    $body.append(`<script type="text/javascript" src="${item}"></script>`);
+                });
+                scriptSrcList = [];
+            }))
             .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
             .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-            .pipe(gulp.dest(`${devPath}`)),
-
-        gulp.src(`${devPath}**/*.html`)
-            .pipe(gulp.dest(`${tempPath.dev}`))
+            .pipe(gulp.dest(`${devPath}`))
             .pipe(reload({stream: true}))
     );
     return merge(tasks);
@@ -310,11 +353,21 @@ gulp.task(TASK.DEV.RUNTIME_STYLE.SASS, () => {
 
 // script 任务
 gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
-    gulp.src([`${devPath}${scriptPath.root}`], {read: false})
-        .pipe(clean());
+    let tasks = [];
+    tasks.push(
+        gulp.src([`${devPath}${scriptPath.root}`], {read: false})
+            .pipe(clean()),
+
+        gulp.src(`${tempPath.dev}**/*.html`)
+            .pipe(replace(/<script[\w\W\s]+><\/script>/g, ''))
+            .pipe(gulp.dest(`${tempPath.dev}`))
+    );
+    return merge(tasks);
 });
 gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
-    webpack(require('./webpack.dev.conf.js'), (err, stats) => {});
+    webpack(require('./cli/webpack.dev.conf.js'), (err, stats) => {
+        browserSync.reload();
+    });
 });
 
 
