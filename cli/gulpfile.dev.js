@@ -24,7 +24,7 @@ const { getFolders } = require('./utils');
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 
@@ -49,18 +49,19 @@ module.exports = (gulp, browserSync) => {
     /* style 任务 */
     gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
         return gulp.src(`${srcPath}${stylePath.sass.entry}`)
-                    .pipe(sass().on('error', sass.logError))
-                    .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))
-                    .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV))
-                    .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+            .pipe(sass().on('error', sass.logError))  // sass 文件编译
+            .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
+            .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
+            //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
+            .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
     });
 
     /* html 任务 */
     gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
         return gulp.src(`${srcPath}**/*.html`)
-                    .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
-                    .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-                    .pipe(gulp.dest(`${runTimePath.dev}`));
+            .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
+            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+            .pipe(gulp.dest(`${runTimePath.dev}`));
     });
 
 
@@ -77,15 +78,12 @@ module.exports = (gulp, browserSync) => {
 
 
     /* image 任务 */
-    gulp.task(TASK.DEV.IMAGE.MAIN, () => {
+    gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
         // 检测对应搜索路径下的文件夹
         let folders = getFolders(`${srcPath}${imagesPath}`),
             tasks = [];
         // 先检测 static/images/ 下的文件
         tasks.push(
-            gulp.src([ `${devPath}${imagesPath}` ], {read: false})
-                .pipe(clean()),
-
             gulp.src(`${srcPath}${imagesPath}*.*`)
                 .pipe(imagemin())
                 .pipe(gulp.dest(`${devPath}${imagesPath}`))
@@ -100,7 +98,7 @@ module.exports = (gulp, browserSync) => {
 
 
     /* dev 合并构建任务 */
-    gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
+    gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
 
 
 
@@ -108,7 +106,7 @@ module.exports = (gulp, browserSync) => {
 
     /* 启动 server 任务 -------------------------------------------------- */
     // 启动NodeJS服务文件
-    gulp.task(TASK.DEV.NODEMON, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN], (cb) => {
+    gulp.task(TASK.DEV.NODEMON, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN], (cb) => {
         let started = false;
         return nodemon({
             script: 'server.js'

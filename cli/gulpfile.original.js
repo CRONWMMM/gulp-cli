@@ -106,15 +106,20 @@ const sourcemaps = require('gulp-sourcemaps');
 
 /* server服务 ---------------------------------------------------------------------------------------------- */
 // const connect = require('gulp-connect');                 // 静态web的服务
+const webServer = require('gulp-webserver');
 const nodemon = require('gulp-nodemon');                    // nodemon，启动node服务
 
 /* 热更新 -------------------------------------------------------------------------------------------------- */
 const browserSync = require('browser-sync').create();
 const reload = browserSync.reload;
 
+/* 错误处理 ------------------------------------------------------------------------------------------------ */
+const plumber = require('gulp-plumber');                    // 使用gulp-plumber来捕获处理任务中的错误
+
+
 /* 辅助模块 ------------------------------------------------------------------------------------------------ */
 const replace = require('gulp-replace');                    // 替换指定文件的指定内容，https://www.npmjs.com/package/gulp-replace
-const changed = require('gulp-changed');                  // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
+const changed = require('gulp-changed');                    // 用来过滤未被修改过的文件，只有修改后的文件才能通过管道，在src和dest内容为统一目录下的时候可能有用
 // const glob = require('glob');
 // const cheerio = require('cheerio');
 const cheerio = require('gulp-cheerio');
