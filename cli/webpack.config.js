@@ -1,5 +1,4 @@
-const path = require('path');
-const resolve = dir => path.join(__dirname, '..', dir).replace(/\\/g, '\\\\');
+const { resolve } = require('./utils');
 /* webpack配置 */
 module.exports = {
 	/* 统一JS模块入口 --------------------------------------------------------------------- */
@@ -24,7 +23,7 @@ module.exports = {
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
 				chunksSortMode: 'dependency'
 			},{
-				filename: path.resolve('build/views/login.html'),
+				filename: resolve('build/views/login.html'),
                 template: resolve('temp-dev/views/login.html'),
 				inject: true,
 				chunks: ['login', 'vendor', 'manifest']
@@ -54,7 +53,7 @@ module.exports = {
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
 				chunksSortMode: 'dependency'
 			},{
-				filename: path.resolve('dist/views/login.html'),
+				filename: resolve('dist/views/login.html'),
                 template: resolve('temp-build/views/login.html'),
 				inject: true,
                 chunks: ['login','vendor','manifest']
@@ -64,7 +63,7 @@ module.exports = {
          * Source Maps
          */
 		// productionSourceMap 字段开启，生产环境下也能打开 sourceMap 映射，不过推荐是 false，讲道理线上环境不应该能看到源码
-		PRODUCTION_SOURCEMAP: true,
+		PRODUCTION_SOURCEMAP: false,
         // https://webpack.js.org/configuration/devtool/#production
         DEVTOOL: '#source-map',
 	},

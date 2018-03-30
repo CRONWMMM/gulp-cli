@@ -1,10 +1,9 @@
-const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-// 这块也是他妈的一个天坑，path.join编译出来的反斜杠windows下Nodejs根本不识别，要自己再转译
-const resolve = dir => path.join(__dirname, '..', dir).replace(/\\/g, '\\\\');
 const CONFIG = require('./webpack.config');
+// utils
+const { resolve } = require('./utils');
 const {ENTRY, BUILD} = CONFIG;
 const HTML_PLUGINS = (list => list.map(item => new HtmlWebpackPlugin(item)))(BUILD.HTML_PLUGINS);
 
