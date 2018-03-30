@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const gulp = require('gulp');
+const imagemin = require('gulp-imagemin');
 const sass = require('gulp-sass');                          // 处理sass
 const autoPrefixer = require('gulp-autoprefixer');          // css样式自动加前缀
 const modifyCssUrls = require('gulp-modify-css-urls');      // css 文件中 url 引用路径处理
@@ -14,6 +15,7 @@ const changed = require('gulp-changed');
 const cheerio = require('gulp-cheerio');
 const merge = require('merge-stream');
 const webpack = require('webpack');
+const { getFolders } = require('./utils');
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
 const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
@@ -59,7 +61,7 @@ module.exports = (gulp, browserSync) => {
     });
 
 
-// style 任务
+    // style 任务
     gulp.task(TASK.DEV.RUNTIME_STYLE.SASS, () => {
         let tasks = [];
         tasks.push(
@@ -77,8 +79,8 @@ module.exports = (gulp, browserSync) => {
     });
 
 
-// script 任务
-    gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
+    // script 任务
+    gulp.task(TASK.DEV.RUNTIME_SCRIPT_CLEAN, () => {
         let tasks = [];
         tasks.push(
             gulp.src([`${devPath}${scriptPath.root}`], {read: false})
@@ -90,9 +92,34 @@ module.exports = (gulp, browserSync) => {
         );
         return merge(tasks);
     });
-    gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
+    gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.RUNTIME_SCRIPT_CLEAN ], () => {
         webpack(require('./webpack.dev.conf.js'), (err, stats) => {
             browserSync.reload();
         });
     });
+
+
+
+    // image 任务
+    gulp.task(TASK.DEV.RUNTIME_IMAGE.MAIN, () => {
+        // 检测对应搜索路径下的文件夹
+        let folders = getFolders(`${srcPath}${imagesPath}`),
+            tasks = [];
+        // 先检测 static/images/ 下的文件
+        tasks.push(
+            gulp.src([ `${devPath}${imagesPath}` ], {read: false})
+                .pipe(clean()),
+
+            gulp.src(`${srcPath}${imagesPath}*.*`)
+                .pipe(imagemin())
+                .pipe(gulp.dest(`${devPath}${imagesPath}`))
+        );
+        // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
+        if (folders.length > 0) {
+            let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+            tasks.push(...taskList);
+        }
+        return merge(tasks);
+    });
+
 };

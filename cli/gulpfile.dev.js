@@ -70,6 +70,7 @@ module.exports = (gulp, browserSync) => {
     gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
         webpack(require('./webpack.dev.conf.js'), (err, status) => {
             if (err != null) console.log('webpack bundle script error, information: ', err);
+            // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
             gulp.src(`${devPath}**/*.html`)
                 .pipe(gulp.dest(`${runTimePath.dev}`));
         });
@@ -118,10 +119,9 @@ module.exports = (gulp, browserSync) => {
         });
     });
 
-    // 浏览器同步，用7000端口去代理Express的3008端口
-    gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
+    gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], () => {
         browserSync.init({
-            notify: false,//关闭页面通知
+            notify: false,   // 关闭页面通知
             proxy: ROUTES.PROXY,
             browser: "chrome",
             port: ROUTES.PORT
@@ -134,6 +134,6 @@ module.exports = (gulp, browserSync) => {
         // 监听脚本文件【js】
         gulp.watch(`${srcPath}${scriptPath}**/*.js`, [ TASK.DEV.RUNTIME_SCRIPT.MAIN ]);
         // 监听静态资源【image】
-        gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.IMAGE.MAIN ]).on('change', reload);
+        gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.RUNTIME_IMAGE.MAIN ]).on('change', reload);
     });
 };

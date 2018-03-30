@@ -280,7 +280,7 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
 
 
 /* image 任务 */
-gulp.task(TASK.DEV.IMAGE.MAIN, () => {
+gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
     // 检测对应搜索路径下的文件夹
     let folders = getFolders(`${srcPath}${imagesPath}`),
         tasks = [];
@@ -296,7 +296,7 @@ gulp.task(TASK.DEV.IMAGE.MAIN, () => {
 
 
 /* dev 合并构建任务 */
-gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
+gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
     // gulp.src([runTimePath.dev], {read: false})
     //     .pipe(clean());
 });
@@ -393,6 +393,22 @@ gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
 });
 
 
+/* image 任务 */
+gulp.task(TASK.DEV.RUNTIME_IMAGE.MAIN, () => {
+    // 检测对应搜索路径下的文件夹
+    let folders = getFolders(`${srcPath}${imagesPath}`),
+        tasks = [];
+    // 先检测 static/images/ 下的文件
+    tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+    // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
+    if (folders.length > 0) {
+        let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+        tasks.push(...taskList);
+    }
+    return merge(tasks);
+});
+
+
 
 
 
@@ -401,7 +417,7 @@ gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
 
 /* 启动 server 任务 --------------------------------------------------------------------------------------------------------------------------------------------------------------------- */
 // 启动NodeJS服务文件
-gulp.task(TASK.DEV.NODEMON, (cb) => {
+gulp.task(TASK.DEV.NODEMON, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN], (cb) => {
     let started = false;
     return nodemon({
         script: 'server.js'
@@ -417,7 +433,7 @@ gulp.task(TASK.DEV.NODEMON, (cb) => {
 // 浏览器同步，用7000端口去代理Express的3008端口
 gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
     browserSync.init({
-        notify: false,//关闭页面通知
+        notify: false,  // 是否开启页面通知，true 开启，false 关闭
         proxy: ROUTES.PROXY,
         // files: ["src/views/**/*.*","src/public/scss/*.*","src/public/js/*.*","src/public/images/*.*"],
         browser: "chrome",
@@ -431,7 +447,7 @@ gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
     // 监听脚本文件【js】
     gulp.watch(`${srcPath}${scriptPath}**/*.js`, [ TASK.DEV.RUNTIME_SCRIPT.MAIN ]);
     // 监听静态资源【image】
-    gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.IMAGE ]).on('change', reload);
+    gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.RUNTIME_IMAGE.MAIN ]).on('change', reload);
 });
 
 

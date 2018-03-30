@@ -109,6 +109,11 @@ const TASK = {
             JS_UGLIFY: 'dev-runtime-uglify',              // JS混淆
             JS_CONCAT: 'dev-runtime-concat',              // JS文件合并
         },
+        RUNTIME_IMAGE: {
+            MAIN: 'dev-runtime-image',
+            IMAGE_MIN: 'dev-runtime-image-min',
+            base64: 'dev-runtime-base64'
+        },
 
         // 服务/页面启动/刷新相关任务名
         SERVER: 'server',                                   // 服务
@@ -118,8 +123,8 @@ const TASK = {
     }
 };
 const ROUTES = {
-    PROXY: 'http://localhost:8000',
-    PORT: 8088,
+    PROXY: 'http://localhost:8000',                         // 这块的端口号其实是对应 node 服务里启动的端口号
+    PORT: 8088,                                             // 这个端口号是 browser-sync 插件代理的端口号
 };
 const AUTO_PREFIXER_CONFIG = {                              // gulp-autoprefixer 配置文件
     DEV: {
