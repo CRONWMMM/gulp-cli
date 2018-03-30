@@ -22,14 +22,14 @@ const merge = require('merge-stream');
 const webpack = require('webpack');
 const { getFolders } = require('./utils');
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 /* 生产环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
 module.exports = gulp => {
     /* clean 文件清除任务 */
     gulp.task(TASK.BUILD.CLEAN, () => {
-        return gulp.src([prdPath, revPath.root], {read: false})
+        return gulp.src([prodPath, revPath.root], {read: false})
             .pipe(clean());
     });
 
@@ -43,7 +43,7 @@ module.exports = gulp => {
             .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
             .pipe(cssmin()) // css 压缩
             .pipe(rev())    // 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-            .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
+            .pipe(gulp.dest(`${prodPath}${stylePath.outputFolder}`))
             .pipe(rev.manifest(`${revPath.fileName.css}`, {}))   // 生成JSON的映射表
             .pipe(gulp.dest(`${revPath.root}`));  // 装填JSON映射表
     });
@@ -57,7 +57,7 @@ module.exports = gulp => {
             // 图片资源
             .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
             // 视音频资源后面再加
-            .pipe(gulp.dest(`${tempPath.build}`));    // 将替换后的html文件装填到新目录
+            .pipe(gulp.dest(`${runTimePath.build}`));    // 将替换后的html文件装填到新目录
     });
 
     /* JS 任务 */
@@ -68,20 +68,24 @@ module.exports = gulp => {
 
     /* image 任务 */
     gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
-        // 检测对应搜索路径下的文件夹
         let folders = getFolders(`${srcPath}${imagesPath}`),
             tasks = [];
-        // 先检测 static/images/ 下的文件
-        tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin({
-            progressive: true,// 无损压缩JPG图片
-            svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
-        })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
-        // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
+
+        tasks.push(
+            gulp.src([ `${prodPath}${imagesPath}` ], {read: false})
+                .pipe(clean()),
+
+            gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin({
+                    progressive: true,// 无损压缩JPG图片
+                    svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
+                }))
+                .pipe(gulp.dest(`${prodPath}${imagesPath}`))
+        );
         if (folders.length > 0) {
             let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin({
                 progressive: true,// 无损压缩JPG图片
                 svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
-            })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+            })).pipe(gulp.dest(`${prodPath}${imagesPath}`)));
             tasks.push(...taskList);
         }
         return merge(tasks);
@@ -92,7 +96,7 @@ module.exports = gulp => {
 
     /* build 合并构建任务 */
     gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.HTML, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
-        gulp.src([tempPath.build], {read: false})
+        gulp.src([runTimePath.build], {read: false})
             .pipe(clean());
     });
 };

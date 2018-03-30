@@ -15,7 +15,7 @@ const cheerio = require('gulp-cheerio');
 const merge = require('merge-stream');
 const webpack = require('webpack');
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 
@@ -28,7 +28,7 @@ module.exports = (gulp, browserSync) => {
         let tasks = [],
             scriptSrcList = [];
         tasks.push(
-            gulp.src(`${tempPath.dev}**/*.html`)
+            gulp.src(`${runTimePath.dev}**/*.html`)
                 .pipe(cheerio(($, file) => {
                     scriptSrcList = [];
                     $('script').each(function() {
@@ -52,7 +52,7 @@ module.exports = (gulp, browserSync) => {
                 .pipe(gulp.dest(`${devPath}`)),
 
             gulp.src(`${devPath}**/*.html`)
-                .pipe(gulp.dest(`${tempPath.dev}`))
+                .pipe(gulp.dest(`${runTimePath.dev}`))
 
         );
         return merge(tasks);
@@ -84,9 +84,9 @@ module.exports = (gulp, browserSync) => {
             gulp.src([`${devPath}${scriptPath.root}`], {read: false})
                 .pipe(clean()),
 
-            gulp.src(`${tempPath.dev}**/*.html`)
+            gulp.src(`${runTimePath.dev}**/*.html`)
                 .pipe(replace(/<script[\w\W\s]+><\/script>/g, ''))
-                .pipe(gulp.dest(`${tempPath.dev}`))
+                .pipe(gulp.dest(`${runTimePath.dev}`))
         );
         return merge(tasks);
     });

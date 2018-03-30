@@ -12,7 +12,7 @@ const PATH_CONFIG = {
     libPath: '',                                            // 依赖库路径
     srcPath: 'src/',                                        // 源码路径
     devPath: 'build/',                                      // 开发环境
-    prdPath: 'dist/',                                       // 生产环境
+    prodPath: 'dist/',                                      // 生产环境
     staticPath: 'static/',                                  // 静态资源路径
     imagesPath: 'static/images/',                           // 图片路径
     templatePath: {
@@ -37,9 +37,9 @@ const PATH_CONFIG = {
         root: 'js/',
         mainEntry: 'js/main.js'
     },
-    tempPath: {                                             // 作为静态css资源映射替换的临时存储文件夹
-        dev: 'temp-dev/',
-        build: 'temp-build/'
+    runTimePath: {                                             // 作为静态css资源映射替换的临时存储文件夹
+        dev: 'runtime-dev/',
+        build: 'runtime-build/'
     },
     revPath: {                                              // 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
         root: 'rev/',                                       // 根目录

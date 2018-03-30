@@ -24,7 +24,7 @@ const { getFolders } = require('./utils');
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 
@@ -49,23 +49,18 @@ module.exports = (gulp, browserSync) => {
     /* style 任务 */
     gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
         return gulp.src(`${srcPath}${stylePath.sass.entry}`)
-            .pipe(sass().on('error', sass.logError))  // sass 文件编译
-            .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
-            .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
-            //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
-            .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+                    .pipe(sass().on('error', sass.logError))
+                    .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))
+                    .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV))
+                    .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
     });
 
     /* html 任务 */
     gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
         return gulp.src(`${srcPath}**/*.html`)
-        // 替换link文件的href引用地址
-            .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
-            // 替换除了script文件的其他src资源引用地址
-            // 图片资源
-            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-            // 视音频资源后面再加
-            .pipe(gulp.dest(`${tempPath.dev}`));    // 将替换后的html文件装填到新目录
+                    .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
+                    .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+                    .pipe(gulp.dest(`${runTimePath.dev}`));
     });
 
 
@@ -74,9 +69,8 @@ module.exports = (gulp, browserSync) => {
     gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
         webpack(require('./webpack.dev.conf.js'), (err, status) => {
             if (err != null) console.log('webpack bundle script error, information: ', err);
-            // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
             gulp.src(`${devPath}**/*.html`)
-                .pipe(gulp.dest(`${tempPath.dev}`));
+                .pipe(gulp.dest(`${runTimePath.dev}`));
         });
     });
 
@@ -88,7 +82,14 @@ module.exports = (gulp, browserSync) => {
         let folders = getFolders(`${srcPath}${imagesPath}`),
             tasks = [];
         // 先检测 static/images/ 下的文件
-        tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+        tasks.push(
+            gulp.src([ `${devPath}${imagesPath}` ], {read: false})
+                .pipe(clean()),
+
+            gulp.src(`${srcPath}${imagesPath}*.*`)
+                .pipe(imagemin())
+                .pipe(gulp.dest(`${devPath}${imagesPath}`))
+        );
         // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
         if (folders.length > 0) {
             let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
@@ -135,6 +136,6 @@ module.exports = (gulp, browserSync) => {
         // 监听脚本文件【js】
         gulp.watch(`${srcPath}${scriptPath}**/*.js`, [ TASK.DEV.RUNTIME_SCRIPT.MAIN ]);
         // 监听静态资源【image】
-        gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.IMAGE ]).on('change', reload);
+        gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK.DEV.IMAGE.MAIN ]).on('change', reload);
     });
 };

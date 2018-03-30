@@ -129,7 +129,7 @@ const { getFolders } = require('./cli/utils');
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./cli/gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, tempPath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 // gulp不同环境命令，写在script里面
@@ -143,7 +143,7 @@ const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath
 /* 生产环境 ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
 /* clean 文件清除任务 */
 gulp.task(TASK.BUILD.CLEAN, () => {
-    return gulp.src([prdPath, revPath.root], {read: false})
+    return gulp.src([prodPath, revPath.root], {read: false})
         .pipe(clean());
 });
 
@@ -157,7 +157,7 @@ gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
         .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.BUILD)) // css 样式前缀
         .pipe(cssmin()) // css 压缩
         .pipe(rev())    // 装填生产环境之前先对文件名加md5后缀，防止本地缓存
-        .pipe(gulp.dest(`${prdPath}${stylePath.outputFolder}`))
+        .pipe(gulp.dest(`${prodPath}${stylePath.outputFolder}`))
         .pipe(rev.manifest(`${revPath.fileName.css}`, {}))   // 生成JSON的映射表
         .pipe(gulp.dest(`${revPath.root}`));  // 装填JSON映射表
 });
@@ -171,7 +171,7 @@ gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.SASS], () => {
         // 图片资源
         .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
         // 视音频资源后面再加
-        .pipe(gulp.dest(`${tempPath.build}`));    // 将替换后的html文件装填到新目录
+        .pipe(gulp.dest(`${runTimePath.build}`));    // 将替换后的html文件装填到新目录
 });
 
 /* JS 任务 */
@@ -195,13 +195,13 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
     tasks.push(gulp.src(`${srcPath}${imagesPath}*.*`).pipe(imagemin({
         progressive: true,// 无损压缩JPG图片
         svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
-    })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+    })).pipe(gulp.dest(`${prodPath}${imagesPath}`)));
     // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
     if (folders.length > 0) {
         let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin({
             progressive: true,// 无损压缩JPG图片
             svgoPlugins: [{removeViewBox: false}], // 不移除svg的viewbox属性
-        })).pipe(gulp.dest(`${prdPath}${imagesPath}`)));
+        })).pipe(gulp.dest(`${prodPath}${imagesPath}`)));
         tasks.push(...taskList);
     }
     return merge(tasks);
@@ -212,7 +212,7 @@ gulp.task(TASK.BUILD.IMAGE.MAIN, () => {
 
 /* build 合并构建任务 */
 gulp.task(TASK.BUILD.MAIN, [TASK.BUILD.CLEAN, TASK.BUILD.STYLE.SASS, TASK.BUILD.HTML, TASK.BUILD.SCRIPT.MAIN, TASK.BUILD.IMAGE.MAIN], () => {
-    gulp.src([tempPath.build], {read: false})
+    gulp.src([runTimePath.build], {read: false})
         .pipe(clean());
 });
 
@@ -257,7 +257,7 @@ gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
         // 图片资源
         .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
         // 视音频资源后面再加
-        .pipe(gulp.dest(`${tempPath.dev}`));    // 将替换后的html文件装填到新目录
+        .pipe(gulp.dest(`${runTimePath.dev}`));    // 将替换后的html文件装填到新目录
 });
 
 
@@ -268,7 +268,7 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
         if (err != null) console.log('webpack bundle script error, information: ', err);
         // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
         gulp.src(`${devPath}**/*.html`)
-            .pipe(gulp.dest(`${tempPath.dev}`));
+            .pipe(gulp.dest(`${runTimePath.dev}`));
     });
 });
 
@@ -292,7 +292,7 @@ gulp.task(TASK.DEV.IMAGE.MAIN, () => {
 
 /* dev 合并构建任务 */
 gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {
-    // gulp.src([tempPath.dev], {read: false})
+    // gulp.src([runTimePath.dev], {read: false})
     //     .pipe(clean());
 });
 
@@ -309,7 +309,7 @@ gulp.task(TASK.DEV.RUNTIME_HTML, () => {
     // 所以要从tempPath下的脚本文件里先拿脚本引用，再和srcPath下修改过的文件合并后，插入到build目录下
     // 这个性能最高的一种方法，不然要重新用webpack打包在inject 浪费性能
     tasks.push(
-        gulp.src(`${tempPath.dev}**/*.html`)
+        gulp.src(`${runTimePath.dev}**/*.html`)
             .pipe(cheerio(($, file) => {
                 // 这块也是必要的，和merge-script的流处理机制有关
                 // 这个处理机制并不是将所有html文件全部读完再走到下一个流程，
@@ -340,7 +340,7 @@ gulp.task(TASK.DEV.RUNTIME_HTML, () => {
             .pipe(gulp.dest(`${devPath}`)),
 
         gulp.src(`${devPath}**/*.html`)
-            .pipe(gulp.dest(`${tempPath.dev}`))
+            .pipe(gulp.dest(`${runTimePath.dev}`))
 
     );
     return merge(tasks);
@@ -375,9 +375,9 @@ gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
             .pipe(clean()),
 
         // 删除temp目录下的script引用
-        gulp.src(`${tempPath.dev}**/*.html`)
+        gulp.src(`${runTimePath.dev}**/*.html`)
             .pipe(replace(/<script[\w\W\s]+><\/script>/g, ''))
-            .pipe(gulp.dest(`${tempPath.dev}`))
+            .pipe(gulp.dest(`${runTimePath.dev}`))
     );
     return merge(tasks);
 });

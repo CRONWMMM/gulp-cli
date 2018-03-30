@@ -1,30 +1,35 @@
 const { resolve } = require('./utils');
+const { PATH_CONFIG } = require('./gulpfile.config');
+const { srcPath, devPath, prodPath, scriptPath, runTimePath, templatePath } = PATH_CONFIG;
+
+
 /* webpack配置 */
 module.exports = {
 	/* 统一JS模块入口 --------------------------------------------------------------------- */
 	ENTRY: {
-		main: resolve('src/js/index.js'),
-		login: resolve('src/js/login.js')
+        main: resolve(`${srcPath}${scriptPath.root}` + 'index.js'),
+        login: resolve(`${srcPath}${scriptPath.root}` + 'login.js')
 	},
 
 	/* 开发环境 --------------------------------------------------------------------------- */
 	DEV: {
 		OUTPUT: {
-			path: resolve('build/js'),
+			// path: resolve('build/js'),
+            path: resolve(`${devPath}${scriptPath.root}`),
 			filename: '[name].[chunkhash].js'
 		},
 		HTML_PLUGINS: [		// webpack的HtmlWebpackPlugin实例数组，对应每个页面文件
 			{
-				filename: resolve('build/views/index.html'),
+                filename: resolve(`${devPath}${templatePath.root}` + 'index.html'),
 				// 没有template的话，webpack会自动生成一份新的html文件
-				template: resolve('temp-dev/views/index.html'),
+                template: resolve(`${runTimePath.dev}${templatePath.root}` + 'index.html'),
 				inject: true,
 				chunks: ['main','vendor','manifest'],
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
 				chunksSortMode: 'dependency'
 			},{
-				filename: resolve('build/views/login.html'),
-                template: resolve('temp-dev/views/login.html'),
+                filename: resolve(`${devPath}${templatePath.root}` + 'login.html'),
+                template: resolve(`${runTimePath.dev}${templatePath.root}` + 'login.html'),
 				inject: true,
 				chunks: ['login', 'vendor', 'manifest']
 			}
@@ -40,21 +45,21 @@ module.exports = {
 	/* 生产环境 --------------------------------------------------------------------------- */
 	BUILD: {
 		OUTPUT: {
-			path: resolve('dist/js'),
+            path: resolve(`${prodPath}${scriptPath.root}`),
 			filename: '[name].[chunkhash].js'
 		},
 		HTML_PLUGINS: [		// webpack的HtmlWebpackPlugin实例数组，对应每个页面文件
 			{
-				filename: resolve('dist/views/index.html'),
+                filename: resolve(`${prodPath}${templatePath.root}` + 'index.html'),
 				// 没有template的话，webpack会自动生成一份新的html文件
-				template: resolve('temp-build/views/index.html'),
+                template: resolve(`${runTimePath.build}${templatePath.root}` + 'index.html'),
 				inject: true,
 				chunks: ['main','vendor','manifest'],
 				// necessary to consistently work with multiple chunks via CommonsChunkPlugin
 				chunksSortMode: 'dependency'
 			},{
-				filename: resolve('dist/views/login.html'),
-                template: resolve('temp-build/views/login.html'),
+                filename: resolve(`${prodPath}${templatePath.root}` + 'login.html'),
+                template: resolve(`${runTimePath.build}${templatePath.root}` + 'login.html'),
 				inject: true,
                 chunks: ['login','vendor','manifest']
 			}
