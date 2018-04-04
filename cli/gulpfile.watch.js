@@ -35,8 +35,9 @@ module.exports = (gulp, browserSync) => {
                     scriptSrcList = [];
                     $('script').each(function() {
                         let $script = $(this),
+                            reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
                             src = $script.attr('src');
-                        scriptSrcList.push(src);
+                        if (reg.test(src)) scriptSrcList.push(src);
                     });
                 })),
 
@@ -87,7 +88,7 @@ module.exports = (gulp, browserSync) => {
                 .pipe(clean()),
 
             gulp.src(`${runTimePath.dev}**/*.html`)
-                .pipe(replace(/<script[\w\W\s]+><\/script>/g, ''))
+                .pipe(replace(/<script.*src=["'](\.\.\/|\.\/|\/)[\W\w\s]+["'].*><\/script>/g, ''))
                 .pipe(gulp.dest(`${runTimePath.dev}`))
         );
         return merge(tasks);

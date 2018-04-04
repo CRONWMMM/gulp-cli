@@ -29,8 +29,10 @@ module.exports = {
     // cheap-module-eval-source-map is faster for development
 	devtool: DEV.DEVTOOL,
 	plugins: [
+		// 使用ProvidePlugin加载的模块在使用时将不再需要import和require进行引入
 		new webpack.ProvidePlugin({
-			$: 'jquery'
+            polyfill: 'babel-polyfill'
+			// $: 'jquery'
 		}),
 		// keep module.id stable when vender modules does not change
 		// vendor不修改的话会默认使用浏览器之前缓存的vendor，webpack不会重新打包生成hash文件

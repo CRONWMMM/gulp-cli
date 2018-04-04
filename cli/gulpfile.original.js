@@ -325,8 +325,9 @@ gulp.task(TASK.DEV.RUNTIME_HTML, () => {
                 $('script').each(function() {
                     // 这块有坑，注意不能写成箭头函数，不然this是无法绑定的
                     let $script = $(this),
+                        reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
                         src = $script.attr('src');
-                    scriptSrcList.push(src);
+                    if (reg.test(src)) scriptSrcList.push(src);
                 });
             })),
 
@@ -381,7 +382,8 @@ gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
 
         // 删除temp目录下的script引用
         gulp.src(`${runTimePath.dev}**/*.html`)
-            .pipe(replace(/<script[\w\W\s]+><\/script>/g, ''))
+             // .*部分是为了匹配 type="text/javascript" ，剔除了cdn引用之外的本地引用全部清空，留给webpack自动inject
+            .pipe(replace(/<script.*src=["'](\.\.\/|\.\/|\/)[\W\w\s]+["'].*><\/script>/g, ''))
             .pipe(gulp.dest(`${runTimePath.dev}`))
     );
     return merge(tasks);

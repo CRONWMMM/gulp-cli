@@ -38,7 +38,7 @@ const PATH_CONFIG = {
         mainEntry: 'js/main.js'
     },
     runTimePath: {                                             // 作为静态css资源映射替换的临时存储文件夹
-        dev: 'runtime-dev/',
+        dev: 'build/runtime-dev/',
         build: 'runtime-build/'
     },
     revPath: {                                              // 随机文件名后生成的映射JSON地址，代表根路径开始的绝对路径（不使用随机文件名的情况下改配置不生效）
