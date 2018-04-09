@@ -2,7 +2,6 @@
 gulp脚手架工具，自己写的
 
 ## Getting started
----
 
 1. Clone the repository
 
