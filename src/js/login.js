@@ -1,5 +1,4 @@
-import 'babel-polyfill';
-import $ from 'jquery';
+
 import BScroll from 'better-scroll';
 console.log(BScroll);
 /**
