@@ -1,0 +1,67 @@
+@import "../common/common";
+
+
+.panel{
+  //@include bgc($panel-bgc);
+  @include trans-center;
+  width: 48%;
+  height: 400px;
+  margin: auto;
+  .title{
+    margin: 20px 0 30px;
+    font-size: 55px;
+    font-weight: 100;
+    text-align: center;
+    letter-spacing: 3px;
+    color: $title-color;
+  }
+  .cut-line{
+    @include bgc($hr-color);
+    width: 50%;
+    height: 1px;
+    border: none;
+  }
+  .content{
+    @include trans-horizontal-center;
+    top: 134px;
+    display: inline-block;
+    li{
+      @include line-height(40px);
+      @include ellipsis;
+      .order-index{
+        @include bgc($order-index-bgc);
+        position: relative;
+        width: $order-index-size;
+        height: $order-index-size;
+        margin-right: 10px;
+        &,& > span{
+          display: inline-block;
+          border-radius: 50%;
+        }
+        & > span{
+          @include trans-center;
+          @include bgc(#fff);
+          width: $order-index-size/2;
+          height: $order-index-size/2;
+        }
+      }
+    }
+  }
+  .footer{
+    @include line-height(40px);
+    @include bgc($panel-footer-bgc);
+    @include trans-horizontal-center;
+    position: absolute;
+    width: 60%;
+    bottom: 0;
+    font-size: 14px;
+    font-weight: 100;
+    text-align: center;
+    color: #757575;
+    & > a{
+      &:hover {
+        color: #237ec1;
+      }
+    }
+  }
+}
