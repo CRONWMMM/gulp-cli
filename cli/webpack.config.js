@@ -46,8 +46,7 @@ module.exports = {
 	BUILD: {
 		OUTPUT: {
             path: resolve(`${prodPath}${scriptPath.root}`),
-			filename: '[name].[chunkhash].js',
-            libraryTarget: "script"		// script / amd / cmd /	commonjs / umd
+			filename: '[name].[chunkhash].js'
 		},
 		// 其中external配置表示我们的模块中的 require(‘jquery’) 中的 jquery 来自于 window.jQuery
 		// 而不要单独打包到我们的入口文件的bundle中，在页面中我们通过script标签来引入【cdn】

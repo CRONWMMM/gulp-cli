@@ -8,3 +8,5 @@ dist/*
 build
 build/*
 npm-debug.log
+rev
+rev/*
