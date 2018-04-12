@@ -56,6 +56,7 @@
     "webpack": "^4.5.0"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0"
+    "babel-polyfill": "^6.26.0",
+    "koa": "^2.5.0"
   }
 }
