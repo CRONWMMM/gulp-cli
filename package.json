@@ -1,7 +1,7 @@
 {
   "name": "gulp-cli",
   "version": "1.0.0",
-  "description": "gulp脚手架工具，自己写的",
+  "description": "",
   "main": "gulpfile.js",
   "bin": {},
   "scripts": {

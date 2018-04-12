@@ -1,12 +1,14 @@
 # gulp-cli
-gulp脚手架工具，自己写的
+
 
 ## Getting started
+
+---
 
 1. Clone the repository
 
 ```
-git clone https://github.com/CRONWMMM/gulp-cli.git
+git clone http://172.30.17.99/Bonobo.Git.Server/gulp-cli.git
 cd gulp-cli
 ```
 
