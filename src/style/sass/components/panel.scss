@@ -5,6 +5,7 @@
   //@include bgc($panel-bgc);
   @include trans-center;
   width: 48%;
+  min-width: 700px;
   height: 400px;
   margin: auto;
   .title{
