@@ -21,4 +21,12 @@ exports.getFolders = dir => {
  * 绝对路径拼接
  * @param dir  {String}   相对路径字符串
  */
-exports.resolve = dir => path.join(__dirname, '..', dir).replace(/\\/g, '\\\\');
+exports.resolve = dir => {
+    const OS_TYPE = process.platform
+    // 这块要根据操作系统分别处理，暂时没有找到更好方法
+    if (OS_TYPE.includes('win')) {
+        return path.resolve(__dirname, `../${dir}`).replace(/\\/g, '\\\\')
+    } else {
+        return path.resolve(__dirname, `../${dir}`)
+    }
+}
