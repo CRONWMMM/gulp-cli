@@ -31,35 +31,49 @@ module.exports = (gulp, browserSync) => {
             scriptSrcList = [];
         tasks.push(
             gulp.src(`${runTimePath.dev}**/*.html`)
-                .pipe(cheerio(($, file) => {
-                    scriptSrcList = [];
-                    $('script').each(function() {
-                        let $script = $(this),
-                            reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
-                            src = $script.attr('src');
-                        if (reg.test(src)) scriptSrcList.push(src);
-                    });
+                .pipe(cheerio({
+                    run($, file, done) {
+                        scriptSrcList = [];
+                        $('script').each(function() {
+                            let $script = $(this),
+                                reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
+                                src = $script.attr('src');
+                            if (reg.test(src)) scriptSrcList.push(src);
+                        });
+                        done()
+                    },
+                    parserOptions: {
+                        decodeEntities: false
+                    }
                 })),
 
             gulp.src(`${srcPath}**/*.html`)
                 .pipe(changed(`${devPath}`))
-                .pipe(cheerio(($, file) => {
-                    let $body = $('body');
-                    scriptSrcList.forEach(item => {
-                        $body.append(`<script type="text/javascript" src="${item}"></script>`);
-                    });
-                    scriptSrcList = [];
+                .pipe(cheerio({
+                    run($, file, done) {
+                        let $body = $('body');
+                        scriptSrcList.forEach(item => {
+                            $body.append(`<script type="text/javascript" src="${item}"></script>`);
+                        });
+                        scriptSrcList = [];
+                        done()
+                    },
+                    parserOptions: {
+                        // 不加这个cheerio会转换html实体
+                        decodeEntities: false
+                    }
                 }))
                 .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
                 .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-                .pipe(gulp.dest(`${devPath}`)),
-
-            gulp.src(`${devPath}**/*.html`)
-                .pipe(gulp.dest(`${runTimePath.dev}`))
-
-        );
+                .pipe(gulp.dest(`${devPath}`))
+        )
         return merge(tasks);
     });
+    // 模板文件同步
+    gulp.task(TASK.DEV.RUNTIME_FILE_SYNC, [TASK.DEV.RUNTIME_HTML], () => {
+        gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
+            .pipe(gulp.dest(`${runTimePath.dev}`))
+    })
 
 
     // style 任务
@@ -95,6 +109,10 @@ module.exports = (gulp, browserSync) => {
     });
     gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.RUNTIME_SCRIPT_CLEAN ], () => {
         webpack(require('./webpack.dev.conf.js'), (err, stats) => {
+            if (err != null) console.log('webpack bundle script error, information: ', err);
+            // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
+            gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
+                .pipe(gulp.dest(`${runTimePath.dev}`));
             browserSync.reload();
         });
     });

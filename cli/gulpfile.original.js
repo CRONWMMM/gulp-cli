@@ -272,7 +272,7 @@ gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
     webpack(require('./cli/webpack.dev.conf.js'), (err, status) => {
         if (err != null) console.log('webpack bundle script error, information: ', err);
         // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
-        gulp.src(`${devPath}**/*.html`)
+        gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
             .pipe(gulp.dest(`${runTimePath.dev}`));
     });
 });
@@ -315,42 +315,55 @@ gulp.task(TASK.DEV.RUNTIME_HTML, () => {
     // 这个性能最高的一种方法，不然要重新用webpack打包在inject 浪费性能
     tasks.push(
         gulp.src(`${runTimePath.dev}**/*.html`)
-            .pipe(cheerio(($, file) => {
-                // 这块也是必要的，和merge-script的流处理机制有关
-                // 这个处理机制并不是将所有html文件全部读完再走到下一个流程，
-                // 而是限度一个文件，读完之后到下一个流程，然后一套走完再回来循环下一个文件
-                // 所以每次拿新的scriptSrcList之前需要清空数据，从而保证每一次的script数据都是当前正在处理文件的
-                // 从而避免了将其他页面的引用文件多次打包的情况。
-                scriptSrcList = [];
-                $('script').each(function() {
-                    // 这块有坑，注意不能写成箭头函数，不然this是无法绑定的
-                    let $script = $(this),
-                        reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
-                        src = $script.attr('src');
-                    if (reg.test(src)) scriptSrcList.push(src);
-                });
+            .pipe(cheerio({
+                run($, file) {
+                    // 这块也是必要的，和merge-script的流处理机制有关
+                    // 这个处理机制并不是将所有html文件全部读完再走到下一个流程，
+                    // 而是限度一个文件，读完之后到下一个流程，然后一套走完再回来循环下一个文件
+                    // 所以每次拿新的scriptSrcList之前需要清空数据，从而保证每一次的script数据都是当前正在处理文件的
+                    // 从而避免了将其他页面的引用文件多次打包的情况。
+                    scriptSrcList = [];
+                    $('script').each(function() {
+                        // 这块有坑，注意不能写成箭头函数，不然this是无法绑定的
+                        let $script = $(this),
+                            reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
+                            src = $script.attr('src');
+                        if (reg.test(src)) scriptSrcList.push(src);
+                    });
+                },
+                parserOptions: {
+                    // 不加这个cheerio会自动转换html实体，以及中文字符
+                    decodeEntities: false
+                }
             })),
 
         gulp.src(`${srcPath}**/*.html`)
         // 这块是关键，修改过的文件才能放行
             .pipe(changed(`${devPath}`))
-            .pipe(cheerio(($, file) => {
-                let $body = $('body');
-                scriptSrcList.forEach(item => {
-                    $body.append(`<script type="text/javascript" src="${item}"></script>`);
-                });
-                scriptSrcList = [];
+            .pipe(cheerio({
+                run($, file){
+                    let $body = $('body');
+                    scriptSrcList.forEach(item => {
+                        $body.append(`<script type="text/javascript" src="${item}"></script>`);
+                    });
+                    scriptSrcList = [];
+                },
+                parserOptions: {
+                    // 不加这个cheerio会自动转换html实体，以及中文字符
+                    decodeEntities: false
+                }
             }))
             .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
             .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-            .pipe(gulp.dest(`${devPath}`)),
-
-        gulp.src(`${devPath}**/*.html`)
-            .pipe(gulp.dest(`${runTimePath.dev}`))
-
+            .pipe(gulp.dest(`${devPath}`))
     );
     return merge(tasks);
 });
+// 模板文件同步
+gulp.task(TASK.DEV.RUNTIME_FILE_SYNC, [TASK.DEV.RUNTIME_HTML], () => {
+    gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
+        .pipe(gulp.dest(`${runTimePath.dev}`))
+})
 
 
 // style 任务
@@ -390,6 +403,10 @@ gulp.task(TASK.DEV.CLEAN.SCRIPT, () => {
 });
 gulp.task(TASK.DEV.RUNTIME_SCRIPT.MAIN, [ TASK.DEV.CLEAN.SCRIPT ], () => {
     webpack(require('./cli/webpack.dev.conf.js'), (err, stats) => {
+        if (err != null) console.log('webpack bundle script error, information: ', err);
+        // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
+        gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
+            .pipe(gulp.dest(`${runTimePath.dev}`));
         browserSync.reload();
     });
 });
@@ -443,7 +460,7 @@ gulp.task(TASK.DEV.BROWSER_SYNC, [TASK.DEV.NODEMON], function() {
     });
 
     // 监听模板文件
-    gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK.DEV.RUNTIME_HTML ]).on('change', reload);
+    gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK.DEV.RUNTIME_HTML, TASK.DEV.RUNTIME_FILE_SYNC ]).on('change', reload);
     // 监听样式文件【sass】
     gulp.watch(`${srcPath}${stylePath.sass.root}**/*.scss`, [ TASK.DEV.RUNTIME_STYLE.SASS ]).on('change', reload);
     // 监听脚本文件【js】

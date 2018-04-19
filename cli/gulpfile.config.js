@@ -81,6 +81,7 @@ const TASK = {
         RUNTIME_SCRIPT_CLEAN: 'dev-runtime-script-clean',
         HTML: 'dev-html',
         RUNTIME_HTML: 'dev-runtime-html',
+        RUNTIME_FILE_SYNC: 'dev-runtime-file-sync',
         STYLE: {
             MAIN: 'dev-css',
             SASS: 'dev-sass',                               // sass编译

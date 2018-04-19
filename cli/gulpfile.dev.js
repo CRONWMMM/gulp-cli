@@ -71,7 +71,7 @@ module.exports = (gulp, browserSync) => {
         webpack(require('./webpack.dev.conf.js'), (err, status) => {
             if (err != null) console.log('webpack bundle script error, information: ', err);
             // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
-            gulp.src(`${devPath}**/*.html`)
+            gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
                 .pipe(gulp.dest(`${runTimePath.dev}`));
         });
     });
@@ -128,7 +128,7 @@ module.exports = (gulp, browserSync) => {
         });
 
         // 监听模板文件
-        gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK.DEV.RUNTIME_HTML ]).on('change', reload);
+        gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK.DEV.RUNTIME_HTML, TASK.DEV.RUNTIME_FILE_SYNC ]).on('change', reload);
         // 监听样式文件【sass】
         gulp.watch(`${srcPath}${stylePath.sass.root}**/*.scss`, [ TASK.DEV.RUNTIME_STYLE.SASS ]).on('change', reload);
         // 监听脚本文件【js】
