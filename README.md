@@ -1,9 +1,8 @@
-# gulp-cli
+# 📦 gulp-cli
 
 
 ## Getting started
 
----
 
 1. Clone the repository
 
