@@ -33,9 +33,11 @@ module.exports = {
 	},
     devtool: BUILD.PRODUCTION_SOURCEMAP ? BUILD.DEVTOOL : false,
 	plugins: [
-		new webpack.ProvidePlugin({
-			$: 'jquery'
-		}),
+        // 使用ProvidePlugin加载的模块在使用时将不再需要import和require进行引入
+        new webpack.ProvidePlugin({
+            polyfill: 'babel-polyfill'
+            // $: 'jquery'
+        }),
 		// keep module.id stable when vender modules does not change
 		// vendor不修改的话会默认使用浏览器之前缓存的vendor，webpack不会重新打包生成hash文件
     	new webpack.HashedModuleIdsPlugin(),
