@@ -15,9 +15,9 @@ const changed = require('gulp-changed');
 const cheerio = require('gulp-cheerio');
 const merge = require('merge-stream');
 const webpack = require('webpack');
-const { getFolders } = require('./utils');
+const { deeplySearchInFolders } = require('./utils');
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prodPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prodPath, staticPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 
@@ -122,22 +122,19 @@ module.exports = (gulp, browserSync) => {
     // image 任务
     gulp.task(TASK.DEV.RUNTIME_IMAGE.MAIN, () => {
         // 检测对应搜索路径下的文件夹
-        let folders = getFolders(`${srcPath}${imagesPath}`),
-            tasks = [];
-        // 先检测 static/images/ 下的文件
+        let tasks = [];
         tasks.push(
             gulp.src([ `${devPath}${imagesPath}` ], {read: false})
-                .pipe(clean()),
-
-            gulp.src(`${srcPath}${imagesPath}*.*`)
-                .pipe(imagemin())
-                .pipe(gulp.dest(`${devPath}${imagesPath}`))
-        );
+                .pipe(clean())
+        )
         // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
-        if (folders.length > 0) {
-            let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
-            tasks.push(...taskList);
-        }
+        deeplySearchInFolders(`${srcPath}${imagesPath}`, (dir) => {
+            tasks.push(
+                gulp.src(path.join(dir, '/*.*'))
+                    .pipe(imagemin())
+                    .pipe(gulp.dest(`${devPath}${staticPath}`))
+            )
+        })
         return merge(tasks);
     });
 

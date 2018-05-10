@@ -20,11 +20,11 @@ const webpack = require('webpack');
 
 
 /* utils -------------------------------------------------------------------------------------------------- */
-const { getFolders } = require('./utils');
+const { deeplySearchInFolders } = require('./utils');
 
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
 const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, imagesPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, staticPath, imagesPath, fontsPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
 
 
 
@@ -44,9 +44,21 @@ module.exports = (gulp, browserSync) => {
     });
 
 
+    /* fonts 任务 */
+    gulp.task(TASK.DEV.FONTS.MAIN, [TASK.DEV.CLEAN.ALL], () => {
+        return gulp.src(`${srcPath}${fontsPath}**/*`)
+            .pipe(gulp.dest(`${devPath}${staticPath}`));
+    })
 
+    /* css 任务 */
+    gulp.task(TASK.DEV.STYLE.CSS, [TASK.DEV.CLEAN.ALL], () => {
+        return gulp.src(`${srcPath}${stylePath.css.entry}`)
+            .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
+            //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
+            .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`));
+    });
 
-    /* style 任务 */
+    /* sass 任务 */
     gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
         return gulp.src(`${srcPath}${stylePath.sass.entry}`)
             .pipe(sass().on('error', sass.logError))  // sass 文件编译
@@ -60,7 +72,7 @@ module.exports = (gulp, browserSync) => {
     gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
         return gulp.src(`${srcPath}**/*.html`)
             .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
-            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${staticPath}$2$3$4`))
             .pipe(gulp.dest(`${runTimePath.dev}`));
     });
 
@@ -81,25 +93,41 @@ module.exports = (gulp, browserSync) => {
     /* image 任务 */
     gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
         // 检测对应搜索路径下的文件夹
+        let tasks = [];
+        // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
+        deeplySearchInFolders(`${srcPath}${imagesPath}`, (dir) => {
+            tasks.push(
+                gulp.src(path.join(dir, '/*.*'))
+                    .pipe(imagemin())
+                    .pipe(gulp.dest(`${devPath}${staticPath}`))
+            )
+        })
+        return merge(tasks);
+    });
+    /*
+    gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
+        // 检测对应搜索路径下的文件夹
         let folders = getFolders(`${srcPath}${imagesPath}`),
             tasks = [];
         // 先检测 static/images/ 下的文件
         tasks.push(
             gulp.src(`${srcPath}${imagesPath}*.*`)
                 .pipe(imagemin())
-                .pipe(gulp.dest(`${devPath}${imagesPath}`))
+                .pipe(gulp.dest(`${devPath}${staticPath}`))
         );
         // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
         if (folders.length > 0) {
-            let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${imagesPath}`)));
+            let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${staticPath}`)));
             tasks.push(...taskList);
         }
+        console.log(tasks.length)
         return merge(tasks);
     });
+     */
 
 
     /* dev 合并构建任务 */
-    gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
+    gulp.task(TASK.DEV.MAIN, [TASK.DEV.CLEAN.ALL, TASK.DEV.STYLE.CSS, TASK.DEV.STYLE.SASS, TASK.DEV.HTML, TASK.DEV.SCRIPT.MAIN, TASK.DEV.IMAGE.MAIN, TASK.DEV.FONTS.MAIN, TASK.DEV.NODEMON, TASK.DEV.BROWSER_SYNC], () => {});
 
 
 

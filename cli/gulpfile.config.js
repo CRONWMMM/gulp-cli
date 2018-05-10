@@ -15,10 +15,14 @@ const PATH_CONFIG = {
     prodPath: 'dist/',                                      // 生产环境
     staticPath: 'static/',                                  // 静态资源路径
     imagesPath: 'static/images/',                           // 图片路径
+    fontsPath: 'static/fonts/',                             // 字体文件路径
     templatePath: {
         root: 'views/'
     },
     stylePath: {
+        css: {
+            entry: 'style/**/*.css'
+        },
         sass: {
             root: 'style/sass/',
             entry: 'style/sass/*.scss'                      // sass入口文件
@@ -55,6 +59,7 @@ const TASK = {
         HTML: 'build-html',
         STYLE: {
             MAIN: 'build-css',
+            CSS: 'dev-css',
             SASS: 'build-sass',                             // sass编译
             LESS: 'build-less',                             // less编译
             STYLUS: 'build-stylus',                         // stylus编译
@@ -69,6 +74,9 @@ const TASK = {
             MAIN: 'build-image',
             IMAGE_MIN: 'build-image-min',
             base64: 'build-base64'
+        },
+        FONTS: {
+            MAIN: 'build-fonts'
         }
     },
     DEV: {
@@ -84,6 +92,7 @@ const TASK = {
         RUNTIME_FILE_SYNC: 'dev-runtime-file-sync',
         STYLE: {
             MAIN: 'dev-css',
+            CSS: 'dev-css',
             SASS: 'dev-sass',                               // sass编译
             LESS: 'dev-less',                               // less编译
             STYLUS: 'dev-stylus',                           // stylus编译
@@ -97,6 +106,9 @@ const TASK = {
             MAIN: 'dev-image',
             IMAGE_MIN: 'dev-image-min',
             base64: 'dev-base64'
+        },
+        FONTS: {
+            MAIN: 'dev-fonts'
         },
         RUNTIME_STYLE: {
             MAIN: 'dev-runtime-css',
@@ -152,7 +164,7 @@ const BASE64_CONFIG = {                                     // gulp-base64 配�
 const MODIFY_CSS_URLS_CONFIG = {                            // gulp-modify-css-urls 配置
     DEV: {
         modify(url, filePath) {   // 替换 css 样式文件中的 url 地址，这块需要自己配置个性化处理函数
-            return `../${PATH_CONFIG.imagesPath}${url}`;
+            return `../${PATH_CONFIG.staticPath}${url}`;
         }
     },
     BUILD: {
