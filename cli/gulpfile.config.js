@@ -20,6 +20,7 @@ const PATH_CONFIG = {
         root: 'views/'
     },
     stylePath: {
+        root: 'style/',
         css: {
             entry: 'style/**/*.css'
         },
