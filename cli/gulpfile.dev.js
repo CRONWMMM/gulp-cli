@@ -4,32 +4,30 @@
 
 const fs = require('fs');
 const path = require('path');
-const gulp = require('gulp');
 const imagemin = require('gulp-imagemin');
 const base64 = require('gulp-base64');
 const sass = require('gulp-sass');
-const autoPrefixer = require('gulp-autoprefixer');
-const modifyCssUrls = require('gulp-modify-css-urls');
 const clean = require('gulp-clean');
 const nodemon = require('gulp-nodemon');
-const replace = require('gulp-replace');
 const changed = require('gulp-changed');
 const cheerio = require('gulp-cheerio');
 const merge = require('merge-stream');
 const webpack = require('webpack');
 
 
-/* utils -------------------------------------------------------------------------------------------------- */
-const { deeplySearchInFolders } = require('./utils');
-
 /* 配置文件 ------------------------------------------------------------------------------------------------ */
-const { CONTROL_CONFIG, PATH_CONFIG, TASK, ROUTES, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('./gulpfile.config');
-const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, staticPath, imagesPath, fontsPath, revPath, runTimePath, templatePath } = PATH_CONFIG;
+const { PATH_CONFIG, TASK, ROUTES } = require('./gulpfile.config');
+const { srcPath, stylePath, scriptPath, imagesPath, templatePath } = PATH_CONFIG;
 
 
-
-
-
+/* tasks -------------------------------------------------------------------------------------------------- */
+const devCleanTask = require('./tasks/cleanTask/devCleanTask');
+const devFontTask = require('./tasks/staticTask/fontTask/devFontTask');
+const devCssTask = require('./tasks/styleTask/cssTask/devCssTask');
+const devSassTask = require('./tasks/styleTask/sassTask/devSassTask');
+const devHtmlTask = require('./tasks/templateTask/htmlTask/devHtmlTask');
+const devJsTask = require('./tasks/scriptTask/jsTask/devJsTask');
+const devImgTask = require('./tasks/staticTask/imgTask/devImgTask');
 
 
 /* 开发环境 (初始 npm run dev) ----------------------------------------------------------------------------------------------------------------------------------------------------------- */
@@ -37,109 +35,21 @@ const { serverPath, srcPath, devPath, prdPath, stylePath, scriptPath, staticPath
 module.exports = (gulp, browserSync) => {
     const reload = browserSync.reload;
 
-    /* clean 文件清除任务 */
-    gulp.task(TASK.DEV.CLEAN.ALL, () => {
-        return gulp.src([devPath], {read: false})
-            .pipe(clean());
-    });
-
-
-    /* fonts 任务 */
-    gulp.task(TASK.DEV.FONTS.MAIN, [TASK.DEV.CLEAN.ALL], () => {
-        return gulp.src(`${srcPath}${fontsPath}**/*`)
-            .pipe(gulp.dest(`${devPath}${staticPath}`));
-    })
-
+    /* clean 任务 */
+    devCleanTask(gulp);
+    /* font 任务 */
+    devFontTask(gulp);
     /* css 任务 */
-    gulp.task(TASK.DEV.STYLE.CSS, [TASK.DEV.CLEAN.ALL], () => {
-        // 检测对应搜索路径下的文件夹
-        let tasks = [];
-        // 如果 style/ 下还有文件夹，继续探，并将下面的文件抽出来
-        deeplySearchInFolders(`${srcPath}${stylePath.root}`, (dir) => {
-            tasks.push(
-                gulp.src(path.join(dir, '/*.css'))
-                    .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
-                    //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
-                    .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`))
-            )
-        })
-        return merge(tasks);
-    });
-
+    devCssTask(gulp);
     /* sass 任务 */
-    gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
-        // 检测对应搜索路径下的文件夹
-        let tasks = [];
-        // 如果 style/ 下还有文件夹，继续探，并将下面的文件抽出来
-        deeplySearchInFolders(`${srcPath}${stylePath.root}`, (dir) => {
-            tasks.push(
-                gulp.src(path.join(dir, '/*.scss'))
-                    .pipe(sass().on('error', sass.logError))  // sass 文件编译
-                    .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
-                    .pipe(modifyCssUrls(MODIFY_CSS_URLS_CONFIG.DEV)) // 替换 css 样式文件中的 url 地址
-                    //.pipe(base64(BASE64_CONFIG.DEV))  // base64压缩小图片
-                    .pipe(gulp.dest(`${devPath}${stylePath.outputFolder}`))
-            )
-        })
-        return merge(tasks);
-    });
-
+    devSassTask(gulp);
     /* html 任务 */
-    gulp.task(TASK.DEV.HTML, [TASK.DEV.STYLE.SASS], () => {
-        return gulp.src(`${srcPath}**/*.html`)
-            .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
-            .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${staticPath}$2$3$4`))
-            .pipe(gulp.dest(`${runTimePath.dev}`));
-    });
-
-
-
+    devHtmlTask(gulp);
     /* JS 任务 */
-    gulp.task(TASK.DEV.SCRIPT.MAIN, [TASK.DEV.HTML], () => {
-        webpack(require('./webpack.dev.conf.js'), (err, status) => {
-            if (err != null) console.log('webpack bundle script error, information: ', err);
-            // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
-            gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
-                .pipe(gulp.dest(`${runTimePath.dev}`));
-        });
-    });
+    devJsTask(gulp);
+    /* img 任务 */
+    devImgTask(gulp);
 
-
-
-    /* image 任务 */
-    gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
-        // 检测对应搜索路径下的文件夹
-        let tasks = [];
-        // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
-        deeplySearchInFolders(`${srcPath}${imagesPath}`, (dir) => {
-            tasks.push(
-                gulp.src(path.join(dir, '/*.*'))
-                    .pipe(imagemin())
-                    .pipe(gulp.dest(`${devPath}${staticPath}`))
-            )
-        })
-        return merge(tasks);
-    });
-    /*
-    gulp.task(TASK.DEV.IMAGE.MAIN, [TASK.DEV.SCRIPT.MAIN], () => {
-        // 检测对应搜索路径下的文件夹
-        let folders = getFolders(`${srcPath}${imagesPath}`),
-            tasks = [];
-        // 先检测 static/images/ 下的文件
-        tasks.push(
-            gulp.src(`${srcPath}${imagesPath}*.*`)
-                .pipe(imagemin())
-                .pipe(gulp.dest(`${devPath}${staticPath}`))
-        );
-        // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来
-        if (folders.length > 0) {
-            let taskList = folders.map(folder => gulp.src(path.join(`${srcPath}${imagesPath}`, folder, '/*.*')).pipe(imagemin()).pipe(gulp.dest(`${devPath}${staticPath}`)));
-            tasks.push(...taskList);
-        }
-        console.log(tasks.length)
-        return merge(tasks);
-    });
-     */
 
 
     /* dev 合并构建任务 */
