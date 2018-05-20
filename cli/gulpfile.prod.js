@@ -4,8 +4,8 @@
 
 /* tasks -------------------------------------------------------------------------------------------------- */
 const prodCleanTask = require('./tasks/cleanTask/prodCleanTask');
-const prodFontTask = require('./tasks/staticTask/fontTask/devFontTask');
-const prodCssTask = require('./tasks/styleTask/cssTask/devCssTask');
+const prodFontTask = require('./tasks/staticTask/fontTask/prodFontTask');
+const prodCssTask = require('./tasks/styleTask/cssTask/prodCssTask');
 const prodSassTask = require('./tasks/styleTask/sassTask/prodSassTask');
 const prodHtmlTask = require('./tasks/templateTask/htmlTask/prodHtmlTask');
 const prodJsTask = require('./tasks/scriptTask/jsTask/prodJsTask');
@@ -19,6 +19,10 @@ module.exports = gulp => {
 
     /* clean 任务 */
     prodCleanTask(gulp);
+    /* font 任务 */
+    prodFontTask(gulp);
+    /* css 任务 */
+    prodCssTask(gulp);
     /* sass 任务 */
     prodSassTask(gulp);
     /* html 任务 */

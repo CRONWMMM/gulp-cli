@@ -4,7 +4,7 @@ const CONTROL_CONFIG = {
         random_file_name: true,                                 // 是否需要随机文件名
         source_maps: {                                          // 是否需要生成map映射文件
         js_map: true,
-            style_map: true
+        style_map: true
     }
 };
 const PATH_CONFIG = {
@@ -56,7 +56,9 @@ const PATH_CONFIG = {
 const TASK = {
     BUILD: {
         MAIN: 'build',
-        CLEAN: 'build-clean',
+        CLEAN: {
+            ALL: 'build-clean'
+        },
         HTML: 'build-html',
         STYLE: {
             MAIN: 'build-css',
@@ -91,6 +93,7 @@ const TASK = {
         HTML: 'dev-html',
         RUNTIME_HTML: 'dev-runtime-html',
         RUNTIME_FILE_SYNC: 'dev-runtime-file-sync',
+        RUNTIME_FONTS: 'dev-runtime-fonts',
         STYLE: {
             MAIN: 'dev-css',
             CSS: 'dev-css',

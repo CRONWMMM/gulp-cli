@@ -9,7 +9,7 @@ const { srcPath, prodPath, stylePath, revPath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {
     /* sass 任务 */
-    gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN], () => {
+    gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN.ALL], () => {
         return gulp.src(`${srcPath}${stylePath.sass.entry}`)
             .pipe(sass().on('error', sass.logError))  // sass 文件编译
             .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片

@@ -2,6 +2,7 @@ const clean = require('gulp-clean');
 const sass = require('gulp-sass');
 const autoPrefixer = require('gulp-autoprefixer');
 const modifyCssUrls = require('gulp-modify-css-urls');
+const merge = require('merge-stream');
 const { PATH_CONFIG, TASK, AUTO_PREFIXER_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
 const { srcPath, devPath, stylePath } = PATH_CONFIG;
 
