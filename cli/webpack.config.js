@@ -1,5 +1,5 @@
 const { resolve } = require('./utils');
-const { PATH_CONFIG } = require('./gulpfile.config');
+const PATH_CONFIG = require('./configs/path.config');
 const { srcPath, devPath, prodPath, scriptPath, runTimePath, templatePath } = PATH_CONFIG;
 
 

@@ -6,7 +6,7 @@ const merge = require('merge-stream');
 const { deeplySearchInFolders } = require('../../../utils');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { MODIFY_CSS_URLS_CONFIG, AUTO_PREFIXER_CONFIG } = require('../../../gulpfile.config');
+const { MODIFY_CSS_URLS_CONFIG, AUTO_PREFIXER_CONFIG } = require('../../../configs/plugins.config');
 const { srcPath, stylePath, devPath } = PATH_CONFIG
 
 function devSassTask(gulp) {

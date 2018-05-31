@@ -6,7 +6,7 @@ const autoPrefixer = require('gulp-autoprefixer');
 const modifyCssUrls = require('gulp-modify-css-urls');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
+const { AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../configs/plugins.config');
 const { srcPath, prodPath, stylePath, revPath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {

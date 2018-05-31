@@ -4,7 +4,7 @@ const merge = require('merge-stream');
 const { deeplySearchInFolders } = require('../../../utils');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
+const { MODIFY_CSS_URLS_CONFIG } = require('../../../configs/plugins.config');
 const { srcPath, stylePath, prodPath } = PATH_CONFIG
 
 function prodCssTask(gulp) {

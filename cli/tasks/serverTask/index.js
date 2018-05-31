@@ -1,7 +1,7 @@
 const nodemon = require('gulp-nodemon');
 const TASK_CONFIG = require('../../configs/task.config');
 const PATH_CONFIG = require('../../configs/path.config');
-const { ROUTES } = require('../../gulpfile.config');
+const SERVER_CONFIG = require('../../configs/server.config');
 const { srcPath, stylePath, scriptPath, imagesPath, templatePath } = PATH_CONFIG;
 
 function serverTask(gulp, browserSync) {
@@ -23,9 +23,9 @@ function serverTask(gulp, browserSync) {
     gulp.task(TASK_CONFIG.DEV.BROWSER_SYNC, [TASK_CONFIG.DEV.NODEMON], () => {
         browserSync.init({
             notify: false,   // 关闭页面通知
-            proxy: ROUTES.PROXY,
+            proxy: SERVER_CONFIG.PROXY,
             browser: "chrome",
-            port: ROUTES.PORT
+            port: SERVER_CONFIG.PORT
         });
 
         // 监听模板文件
