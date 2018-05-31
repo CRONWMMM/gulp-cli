@@ -4,12 +4,14 @@ const base64 = require('gulp-base64');
 const rev = require('gulp-rev');
 const autoPrefixer = require('gulp-autoprefixer');
 const modifyCssUrls = require('gulp-modify-css-urls');
-const { PATH_CONFIG, TASK, AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
+const { AUTO_PREFIXER_CONFIG, BASE64_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
 const { srcPath, prodPath, stylePath, revPath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {
     /* sass 任务 */
-    gulp.task(TASK.BUILD.STYLE.SASS, [TASK.BUILD.CLEAN.ALL], () => {
+    gulp.task(TASK_CONFIG.BUILD.STYLE.SASS, [TASK_CONFIG.BUILD.CLEAN.MAIN], () => {
         return gulp.src(`${srcPath}${stylePath.sass.entry}`)
             .pipe(sass().on('error', sass.logError))  // sass 文件编译
             .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片

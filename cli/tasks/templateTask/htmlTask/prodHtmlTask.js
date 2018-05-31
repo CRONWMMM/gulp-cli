@@ -1,12 +1,13 @@
 const revCollector = require('gulp-rev-collector');
 const replace = require('gulp-replace');
-const { PATH_CONFIG, TASK } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
 const { srcPath, stylePath, imagesPath, revPath, runTimePath } = PATH_CONFIG;
 
 function prodHtmlTask(gulp) {
     /* html 任务 */
     // 通过样式映射表修改html文件上引用的css文件路径
-    gulp.task(TASK.BUILD.HTML, [TASK.BUILD.STYLE.SASS], () => {
+    gulp.task(TASK_CONFIG.BUILD.HTML.MAIN, [TASK_CONFIG.BUILD.STYLE.SASS], () => {
         return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
             .pipe(revCollector())   // 替换静态资源MD5文件名
             // 替换link文件的href引用地址

@@ -4,12 +4,14 @@ const modifyCssUrls = require('gulp-modify-css-urls');
 const autoPrefixer = require('gulp-autoprefixer');
 const merge = require('merge-stream');
 const { deeplySearchInFolders } = require('../../../utils');
-const { PATH_CONFIG, TASK, MODIFY_CSS_URLS_CONFIG, AUTO_PREFIXER_CONFIG } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
+const { MODIFY_CSS_URLS_CONFIG, AUTO_PREFIXER_CONFIG } = require('../../../gulpfile.config');
 const { srcPath, stylePath, devPath } = PATH_CONFIG
 
 function devSassTask(gulp) {
     /* sass 任务 */
-    gulp.task(TASK.DEV.STYLE.SASS, [TASK.DEV.CLEAN.ALL], () => {
+    gulp.task(TASK_CONFIG.DEV.STYLE.SASS, [TASK_CONFIG.DEV.CLEAN.MAIN], () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         // 如果 style/ 下还有文件夹，继续探，并将下面的文件抽出来

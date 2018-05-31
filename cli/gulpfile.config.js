@@ -62,7 +62,7 @@ const TASK = {
         HTML: 'build-html',
         STYLE: {
             MAIN: 'build-css',
-            CSS: 'dev-css',
+            CSS: 'build-css',
             SASS: 'build-sass',                             // sass编译
             LESS: 'build-less',                             // less编译
             STYLUS: 'build-stylus',                         // stylus编译

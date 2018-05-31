@@ -2,12 +2,14 @@ const path = require('path');
 const modifyCssUrls = require('gulp-modify-css-urls');
 const merge = require('merge-stream');
 const { deeplySearchInFolders } = require('../../../utils');
-const { PATH_CONFIG, TASK, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
+const { MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
 const { srcPath, stylePath, prodPath } = PATH_CONFIG
 
 function prodCssTask(gulp) {
     /* css 任务 */
-    gulp.task(TASK.BUILD.STYLE.CSS, [TASK.BUILD.CLEAN.ALL], () => {
+    gulp.task(TASK_CONFIG.BUILD.STYLE.CSS, [TASK_CONFIG.BUILD.CLEAN.MAIN], () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         // 如果 style/ 下还有文件夹，继续探，并将下面的文件抽出来

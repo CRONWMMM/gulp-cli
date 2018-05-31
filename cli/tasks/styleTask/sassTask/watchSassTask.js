@@ -3,12 +3,14 @@ const sass = require('gulp-sass');
 const autoPrefixer = require('gulp-autoprefixer');
 const modifyCssUrls = require('gulp-modify-css-urls');
 const merge = require('merge-stream');
-const { PATH_CONFIG, TASK, AUTO_PREFIXER_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
+const { AUTO_PREFIXER_CONFIG, MODIFY_CSS_URLS_CONFIG } = require('../../../gulpfile.config');
 const { srcPath, devPath, stylePath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {
     // sass 任务
-    gulp.task(TASK.DEV.RUNTIME_STYLE.SASS, () => {
+    gulp.task(TASK_CONFIG.DEV.RUNTIME_STYLE.SASS, () => {
         let tasks = [];
         tasks.push(
             gulp.src([`${devPath}${stylePath.outputFolder}/**/*`], {read: false})
