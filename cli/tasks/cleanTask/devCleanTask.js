@@ -1,10 +1,11 @@
 const clean = require('gulp-clean');
-const { PATH_CONFIG, TASK } = require('../../gulpfile.config');
+const TASK_CONFIG = require('../../configs/task.config');
+const PATH_CONFIG = require('../../configs/path.config');
 const { devPath } = PATH_CONFIG
 
 function devCleanTask(gulp) {
     /* clean 文件清除任务 */
-    gulp.task(TASK.DEV.CLEAN.ALL, () => {
+    gulp.task(TASK_CONFIG.DEV.CLEAN.MAIN, () => {
         return gulp.src([devPath], {read: false})
             .pipe(clean());
     });

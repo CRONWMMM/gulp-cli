@@ -1,9 +1,10 @@
-const { PATH_CONFIG, TASK } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
 const { srcPath, fontsPath, staticPath, devPath } = PATH_CONFIG
 
 function devFontTask(gulp) {
     /* fonts 任务 */
-    gulp.task(TASK.DEV.FONTS.MAIN, [TASK.DEV.CLEAN.ALL], () => {
+    gulp.task(TASK_CONFIG.DEV.FONTS.MAIN, [TASK_CONFIG.DEV.CLEAN.MAIN], () => {
         return gulp.src(`${srcPath}${fontsPath}**/*`)
             .pipe(gulp.dest(`${devPath}${staticPath}`));
     })

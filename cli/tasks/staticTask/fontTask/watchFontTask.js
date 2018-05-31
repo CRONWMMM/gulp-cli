@@ -1,11 +1,12 @@
 const clean = require('gulp-clean');
 const merge = require('merge-stream');
-const { PATH_CONFIG, TASK } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
 const { srcPath, fontsPath, staticPath, devPath } = PATH_CONFIG
 
 function watchFontTask(gulp) {
     /* fonts 任务 */
-    gulp.task(TASK.DEV.RUNTIME_FONTS, () => {
+    gulp.task(TASK_CONFIG.DEV.RUNTIME_FONTS, () => {
         let tasks = [];
         tasks.push(
             gulp.src([`${devPath}${fontsPath}**/*`], {read: false})

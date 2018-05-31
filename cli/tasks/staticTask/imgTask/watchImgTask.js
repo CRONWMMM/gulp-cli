@@ -2,13 +2,14 @@ const path = require('path');
 const clean = require('gulp-clean');
 const imagemin = require('gulp-imagemin');
 const { deeplySearchInFolders } = require('../../../utils');
-const { PATH_CONFIG, TASK } = require('../../../gulpfile.config');
+const TASK_CONFIG = require('../../../configs/task.config');
+const PATH_CONFIG = require('../../../configs/path.config');
 const { srcPath, devPath, staticPath, imagesPath } = PATH_CONFIG;
 
 
 function watchImgTask(gulp) {
     // image 任务
-    gulp.task(TASK.DEV.RUNTIME_IMAGE.MAIN, () => {
+    gulp.task(TASK_CONFIG.DEV.RUNTIME_IMAGE.MAIN, () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         tasks.push(
