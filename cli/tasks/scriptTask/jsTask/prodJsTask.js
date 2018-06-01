@@ -6,7 +6,7 @@ const TASK_CONFIG = require('../../../configs/task.config');
 
 function prodJsTask(gulp) {
     /* JS 任务 */
-    gulp.task(TASK_CONFIG.BUILD.SCRIPT.MAIN, [TASK_CONFIG.BUILD.HTML.MAIN], () => {
+    gulp.task(TASK_CONFIG.BUILD_JS, [TASK_CONFIG.BUILD_HTML], () => {
         webpack(WEBPACK_PROD_CONFIG, (err, stats) => {});
     });
 }

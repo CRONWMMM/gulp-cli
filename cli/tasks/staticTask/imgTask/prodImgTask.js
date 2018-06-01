@@ -9,7 +9,7 @@ const { srcPath, prodPath, staticPath, imagesPath } = PATH_CONFIG;
 
 function prodImgTask(gulp) {
     /* image 任务 */
-    gulp.task(TASK_CONFIG.BUILD.IMAGE.MAIN, () => {
+    gulp.task(TASK_CONFIG.BUILD_IMAGE, () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         tasks.push(

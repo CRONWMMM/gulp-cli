@@ -4,7 +4,7 @@ const { srcPath, fontsPath, staticPath, prodPath } = PATH_CONFIG
 
 function prodFontTask(gulp) {
     /* fonts 任务 */
-    gulp.task(TASK_CONFIG.BUILD.FONTS.MAIN, [TASK_CONFIG.BUILD.CLEAN.MAIN], () => {
+    gulp.task(TASK_CONFIG.BUILD_FONTS, [TASK_CONFIG.BUILD_CLEAN], () => {
         return gulp.src(`${srcPath}${fontsPath}**/*`)
             .pipe(gulp.dest(`${prodPath}${staticPath}`));
     })

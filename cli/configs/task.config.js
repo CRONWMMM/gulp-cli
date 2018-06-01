@@ -1,30 +1,14 @@
 module.exports = {
-    BUILD: {
-        MAIN: 'build',
-        CLEAN: {
-            MAIN: 'build-clean'
-        },
-        HTML: {
-            MAIN: 'build-html'
-        },
-        STYLE: {
-            MAIN: 'build-css',
-            CSS: 'build-css',
-            SASS: 'build-sass',                             // sass编译
-            LESS: 'build-less',                             // less编译
-            STYLUS: 'build-stylus',                         // stylus编译
-            MANIFEST: 'build-manifest'
-        },
-        SCRIPT: {
-            MAIN: 'build-js'
-        },
-        IMAGE: {
-            MAIN: 'build-image'
-        },
-        FONTS: {
-            MAIN: 'build-fonts'
-        }
-    },
+    BUILD: 'build',
+    BUILD_CLEAN: 'build-clean',
+    BUILD_CSS: 'build-css',
+    BUILD_SASS: 'build-sass',
+    BUILD_MANIFEST: 'build-manifest',
+    BUILD_HTML: 'build-html',
+    BUILD_JS: 'build-js',
+    BUILD_IMAGE: 'build-image',
+    BUILD_FONTS: 'build-fonts',
+
     DEV: {
         MAIN: 'dev',
         CLEAN: {

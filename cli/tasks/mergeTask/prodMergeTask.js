@@ -5,15 +5,15 @@ const { runTimePath } = PATH_CONFIG;
 
 function prodMergeTask(gulp) {
     /* build 合并构建任务 */
-    gulp.task(TASK_CONFIG.BUILD.MAIN,
+    gulp.task(TASK_CONFIG.BUILD,
                 [
-                    TASK_CONFIG.BUILD.CLEAN.MAIN,
-                    TASK_CONFIG.BUILD.FONTS.MAIN,
-                    TASK_CONFIG.BUILD.STYLE.CSS,
-                    TASK_CONFIG.BUILD.STYLE.SASS,
-                    TASK_CONFIG.BUILD.HTML.MAIN,
-                    TASK_CONFIG.BUILD.SCRIPT.MAIN,
-                    TASK_CONFIG.BUILD.IMAGE.MAIN
+                    TASK_CONFIG.BUILD_CLEAN,
+                    TASK_CONFIG.BUILD_FONTS,
+                    TASK_CONFIG.BUILD_CSS,
+                    TASK_CONFIG.BUILD_SASS,
+                    TASK_CONFIG.BUILD_HTML,
+                    TASK_CONFIG.BUILD_JS,
+                    TASK_CONFIG.BUILD_IMAGE
                 ], () => {
         gulp.src([runTimePath.build], {read: false})
             .pipe(clean());

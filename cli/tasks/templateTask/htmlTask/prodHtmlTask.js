@@ -7,7 +7,7 @@ const { srcPath, stylePath, imagesPath, revPath, runTimePath } = PATH_CONFIG;
 function prodHtmlTask(gulp) {
     /* html 任务 */
     // 通过样式映射表修改html文件上引用的css文件路径
-    gulp.task(TASK_CONFIG.BUILD.HTML.MAIN, [TASK_CONFIG.BUILD.STYLE.SASS], () => {
+    gulp.task(TASK_CONFIG.BUILD_HTML, [TASK_CONFIG.BUILD_SASS], () => {
         return gulp.src([`${revPath.root}**/*.json`, `${srcPath}**/*.html`])
             .pipe(revCollector())   // 替换静态资源MD5文件名
             // 替换link文件的href引用地址
