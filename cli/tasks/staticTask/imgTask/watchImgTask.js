@@ -9,7 +9,7 @@ const { srcPath, devPath, staticPath, imagesPath } = PATH_CONFIG;
 
 function watchImgTask(gulp) {
     // image 任务
-    gulp.task(TASK_CONFIG.DEV.RUNTIME_IMAGE.MAIN, () => {
+    gulp.task(TASK_CONFIG.RUNTIME_IMAGE, () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         tasks.push(

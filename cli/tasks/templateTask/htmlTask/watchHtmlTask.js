@@ -7,7 +7,7 @@ const { srcPath, devPath, stylePath, imagesPath, runTimePath } = PATH_CONFIG;
 
 function prodHtmlTask(gulp) {
     // html 任务
-    gulp.task(TASK_CONFIG.DEV.RUNTIME_HTML, () => {
+    gulp.task(TASK_CONFIG.RUNTIME_HTML, () => {
         let tasks = [],
             scriptSrcList = [];
         tasks.push(
@@ -51,7 +51,7 @@ function prodHtmlTask(gulp) {
         return merge(tasks);
     });
     // 模板文件同步
-    gulp.task(TASK_CONFIG.DEV.RUNTIME_FILE_SYNC, [TASK_CONFIG.DEV.RUNTIME_HTML], () => {
+    gulp.task(TASK_CONFIG.RUNTIME_FILE_SYNC, [TASK_CONFIG.RUNTIME_HTML], () => {
         gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
             .pipe(gulp.dest(`${runTimePath.dev}`));
     });

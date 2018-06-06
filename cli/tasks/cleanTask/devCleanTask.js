@@ -5,7 +5,7 @@ const { devPath } = PATH_CONFIG
 
 function devCleanTask(gulp) {
     /* clean 文件清除任务 */
-    gulp.task(TASK_CONFIG.DEV.CLEAN.MAIN, () => {
+    gulp.task(TASK_CONFIG.DEV_CLEAN, () => {
         return gulp.src([devPath], {read: false})
             .pipe(clean());
     });

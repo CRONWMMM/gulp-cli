@@ -6,7 +6,7 @@ const { srcPath, fontsPath, staticPath, devPath } = PATH_CONFIG
 
 function watchFontTask(gulp) {
     /* fonts 任务 */
-    gulp.task(TASK_CONFIG.DEV.RUNTIME_FONTS, () => {
+    gulp.task(TASK_CONFIG.RUNTIME_FONTS, () => {
         let tasks = [];
         tasks.push(
             gulp.src([`${devPath}${fontsPath}**/*`], {read: false})

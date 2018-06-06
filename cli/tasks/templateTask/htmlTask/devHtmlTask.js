@@ -8,7 +8,7 @@ const { srcPath, stylePath, staticPath, runTimePath } = PATH_CONFIG
 
 function devHtmlTask(gulp) {
     /* html 任务 */
-    gulp.task(TASK_CONFIG.DEV.HTML, [TASK_CONFIG.DEV.STYLE.SASS], () => {
+    gulp.task(TASK_CONFIG.DEV_HTML, [TASK_CONFIG.DEV_SASS], () => {
         return gulp.src(`${srcPath}**/*.html`)
             .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
             .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${staticPath}$2$3$4`))

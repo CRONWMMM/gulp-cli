@@ -9,7 +9,7 @@ const { devPath, srcPath, imagesPath, staticPath } = PATH_CONFIG
 
 function devImgTask(gulp) {
     /* image 任务 */
-    gulp.task(TASK_CONFIG.DEV.IMAGE.MAIN, [TASK_CONFIG.DEV.SCRIPT.MAIN], () => {
+    gulp.task(TASK_CONFIG.DEV_IMAGE, [TASK_CONFIG.DEV_JS], () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         // 如果 static/images/ 下还有文件夹，继续探，并将下面的文件抽出来

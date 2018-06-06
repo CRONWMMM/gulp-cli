@@ -9,7 +9,7 @@ const { srcPath, stylePath, devPath } = PATH_CONFIG
 
 function devCssTask(gulp) {
     /* css 任务 */
-    gulp.task(TASK_CONFIG.DEV.STYLE.CSS, [TASK_CONFIG.DEV.CLEAN.MAIN], () => {
+    gulp.task(TASK_CONFIG.DEV_CSS, [TASK_CONFIG.DEV_CLEAN], () => {
         // 检测对应搜索路径下的文件夹
         let tasks = [];
         // 如果 style/ 下还有文件夹，继续探，并将下面的文件抽出来

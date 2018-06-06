@@ -10,7 +10,7 @@ const { srcPath, devPath, stylePath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {
     // sass 任务
-    gulp.task(TASK_CONFIG.DEV.RUNTIME_STYLE.SASS, () => {
+    gulp.task(TASK_CONFIG.RUNTIME_SASS, () => {
         let tasks = [];
         tasks.push(
             gulp.src([`${devPath}${stylePath.outputFolder}/**/*`], {read: false})
