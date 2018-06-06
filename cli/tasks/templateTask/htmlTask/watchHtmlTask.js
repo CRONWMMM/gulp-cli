@@ -1,6 +1,7 @@
 const cheerio = require('gulp-cheerio');
 const changed = require('gulp-changed');
 const replace = require('gulp-replace');
+const merge = require('merge-stream');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
 const { srcPath, devPath, stylePath, imagesPath, runTimePath } = PATH_CONFIG;
