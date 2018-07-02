@@ -6,6 +6,7 @@
 /* tasks -------------------------------------------------------------------------------------------------- */
 const watchHtmlTask = require('./tasks/templateTask/htmlTask/watchHtmlTask');
 const watchSassTask = require('./tasks/styleTask/sassTask/watchSassTask');
+const watchCssTask = require('./tasks/styleTask/cssTask/watchCssTask');
 const watchJsTask = require('./tasks/scriptTask/jsTask/watchJsTask');
 const watchImgTask = require('./tasks/staticTask/imgTask/watchImgTask');
 
@@ -16,6 +17,8 @@ module.exports = (gulp, browserSync) => {
 
     /* html 任务 */
     watchHtmlTask(gulp);
+    /* css 任务 */
+    watchCssTask(gulp);
     /* sass 任务 */
     watchSassTask(gulp);
     /* js 任务 */

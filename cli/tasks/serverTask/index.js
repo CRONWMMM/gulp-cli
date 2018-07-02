@@ -8,7 +8,7 @@ function serverTask(gulp, browserSync) {
     const reload = browserSync.reload;
     /* 启动 server 任务 */
     // 启动NodeJS服务文件
-    gulp.task(TASK_CONFIG.DEV_NODEMON, [TASK_CONFIG.DEV_CLEAN, TASK_CONFIG.DEV_SASS, TASK_CONFIG.DEV_HTML, TASK_CONFIG.DEV_JS, TASK_CONFIG.DEV_IMAGE], (cb) => {
+    gulp.task(TASK_CONFIG.DEV_NODEMON, [TASK_CONFIG.DEV_CLEAN, TASK_CONFIG.DEV_CSS, TASK_CONFIG.DEV_SASS, TASK_CONFIG.DEV_HTML, TASK_CONFIG.DEV_JS, TASK_CONFIG.DEV_IMAGE], (cb) => {
         let started = false;
         return nodemon({
             script: 'server.js'
@@ -30,6 +30,8 @@ function serverTask(gulp, browserSync) {
 
         // 监听模板文件
         gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK_CONFIG.RUNTIME_HTML, TASK_CONFIG.RUNTIME_FILE_SYNC ]).on('change', reload);
+        // 监听样式文件【css】
+        gulp.watch(`${srcPath}${stylePath.css.entry}`, [ TASK_CONFIG.RUNTIME_CSS ]).on('change', reload);
         // 监听样式文件【sass】
         gulp.watch(`${srcPath}${stylePath.sass.root}**/*.scss`, [ TASK_CONFIG.RUNTIME_SASS ]).on('change', reload);
         // 监听脚本文件【js】

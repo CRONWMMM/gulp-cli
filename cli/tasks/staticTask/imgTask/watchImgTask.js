@@ -1,5 +1,6 @@
 const path = require('path');
 const clean = require('gulp-clean');
+const merge = require('merge-stream');
 const imagemin = require('gulp-imagemin');
 const { deeplySearchInFolders } = require('../../../utils');
 const TASK_CONFIG = require('../../../configs/task.config');

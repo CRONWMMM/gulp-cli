@@ -5,8 +5,8 @@ module.exports = {
     devPath: 'build/',                                      // 开发环境
     prodPath: 'dist/',                                      // 生产环境
     staticPath: 'static/',                                  // 静态资源路径
-    imagesPath: 'static/images/',                           // 图片路径
-    fontsPath: 'static/fonts/',                             // 字体文件路径
+    imagesPath: 'static/',                                  // 图片路径
+    fontsPath: 'static/',                                   // 字体文件路径
     templatePath: {
         root: 'views/'
     },
