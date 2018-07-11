@@ -5,11 +5,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CONFIG = require('./webpack.config');
 // utils
 const { resolve } = require('./utils');
-const {ENTRY, DEV} = CONFIG;
+const { DEV } = CONFIG;
 const HTML_PLUGINS = (list => list.map(item => new HtmlWebpackPlugin(item)))(DEV.HTML_PLUGINS);
 
 module.exports = {
-	entry: ENTRY,
+	entry: DEV.ENTRY,
 	output: DEV.OUTPUT,
 	resolve: {
 		extensions: ['.js', '.vue', '.json'],

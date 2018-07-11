@@ -27,6 +27,10 @@ router.get('/index', async (ctx, next) => {
     await ctx.render('index')
 })
 
+router.get('/login', async (ctx, next) => {
+    await ctx.render('login')
+})
+
 app.use(router.routes())
    .use(router.allowedMethods())
    .listen(port);
