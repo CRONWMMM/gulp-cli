@@ -1,7 +1,6 @@
 const path = require('path');
 const flatten = require('gulp-flatten');
 const imagemin = require('gulp-imagemin');
-const { deeplySearchInFolders } = require('../../../utils');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
 const { devPath, srcPath, imagesPath, staticPath } = PATH_CONFIG

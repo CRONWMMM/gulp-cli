@@ -4,7 +4,7 @@ const imagemin = require('gulp-imagemin');
 const merge = require('merge-stream');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { prodPath, staticPath, imagesPath } = PATH_CONFIG;
+const { srcPath, prodPath, staticPath, imagesPath } = PATH_CONFIG;
 
 function prodImgTask(gulp) {
     /* image 任务 */

@@ -19,7 +19,8 @@ function prodHtmlTask(gulp) {
                         scriptSrcList = [];
                         $('script').each(function() {
                             let $script = $(this),
-                                reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
+                                // reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
+                                reg = /.+\.js$/g,
                                 src = $script.attr('src');
                             if (reg.test(src)) scriptSrcList.push(src);
                         });
@@ -46,8 +47,8 @@ function prodHtmlTask(gulp) {
                         decodeEntities: false
                     }
                 }))
-                .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${styleOutPutPath}$2$3`))
-                .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
+                .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1/${styleOutPutPath}$2$3`))
+                .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1/${imagesPath}$2$3$4`))
                 .pipe(flatten())
                 .pipe(gulp.dest(`${devPath}${templatePath}`))
         );
