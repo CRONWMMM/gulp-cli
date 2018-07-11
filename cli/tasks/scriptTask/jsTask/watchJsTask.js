@@ -5,7 +5,7 @@ const webpack = require('webpack');
 const WEBPACK_WATCH_CONFIG = require('../../../webpack.dev.conf.js');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { devPath, scriptPath, runTimePath } = PATH_CONFIG;
+const { devPath, javaScriptPath, runTimePath } = PATH_CONFIG;
 
 function watchJsTask(gulp, browserSync) {
     const reload = browserSync.reload;
@@ -13,12 +13,12 @@ function watchJsTask(gulp, browserSync) {
     gulp.task(TASK_CONFIG.RUNTIME_SCRIPT_CLEAN, () => {
         let tasks = [];
         tasks.push(
-            gulp.src([`${devPath}${scriptPath.root}`], {read: false})
+            gulp.src([`${devPath}${javaScriptPath}`], {read: false})
                 .pipe(clean()),
 
-            gulp.src(`${runTimePath.dev}**/*.html`)
+            gulp.src(`${devPath}${runTimePath}**/*.html`)
                 .pipe(replace(/<script.*src=["'](\.\.\/|\.\/|\/)[\W\w\s]+["'].*><\/script>/g, ''))
-                .pipe(gulp.dest(`${runTimePath.dev}`))
+                .pipe(gulp.dest(`${devPath}${runTimePath}`))
         );
         return merge(tasks);
     });
@@ -32,8 +32,8 @@ function watchJsTask(gulp, browserSync) {
                 console.log('webpack bundle script warnings, information: ', stats.compilation.warnings);
             } else {
                 // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
-                gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
-                    .pipe(gulp.dest(`${runTimePath.dev}`));
+                gulp.src([`${devPath}**/*.html`, `!${devPath}${runTimePath}**/*.html`])
+                    .pipe(gulp.dest(`${devPath}${runTimePath}`));
                 reload();
             }
         });

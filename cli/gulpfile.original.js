@@ -56,7 +56,8 @@
  * 21.https://segmentfault.com/a/1190000006190814?utm_source=weekly&utm_medium=email&utm_campaign=email_weekly#articleHeader0       【教你从零开始搭建一款前端脚手架工具】
  * 22.https://www.jianshu.com/p/038c6b91f667                            【Yeoman，教你快速打造自己的脚手架】
  * 23.https://www.gulpjs.com.cn/docs/recipes/running-task-steps-per-folder/     【gulp每个文件夹生成单独一个文件】
- *
+ * 24.https://www.tuicool.com/articles/nAzqiaN                          【Gulp 错误管理】
+ * 25.https://blog.csdn.net/u011254082/article/details/51534394         【Gulp 错误处理】
  *
  */
 

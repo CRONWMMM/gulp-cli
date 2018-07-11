@@ -7,7 +7,7 @@ const { prodPath, revPath } = PATH_CONFIG;
 function prodCleanTask(gulp) {
     /* clean 文件清除任务 */
     gulp.task(TASK_CONFIG.BUILD_CLEAN, () => {
-        return gulp.src([prodPath, revPath.root], {read: false})
+        return gulp.src([prodPath, revPath], {read: false})
             .pipe(clean());
     });
 }

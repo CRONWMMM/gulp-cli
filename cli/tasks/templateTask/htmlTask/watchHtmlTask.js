@@ -1,10 +1,11 @@
 const cheerio = require('gulp-cheerio');
 const changed = require('gulp-changed');
+const flatten = require('gulp-flatten');
 const replace = require('gulp-replace');
 const merge = require('merge-stream');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { srcPath, devPath, stylePath, imagesPath, runTimePath } = PATH_CONFIG;
+const { srcPath, devPath, templatePath, styleOutPutPath, imagesPath, runTimePath } = PATH_CONFIG;
 
 function prodHtmlTask(gulp) {
     // html 任务
@@ -12,7 +13,7 @@ function prodHtmlTask(gulp) {
         let tasks = [],
             scriptSrcList = [];
         tasks.push(
-            gulp.src(`${runTimePath.dev}**/*.html`)
+            gulp.src(`${devPath}${runTimePath}**/*.html`)
                 .pipe(cheerio({
                     run($, file, done) {
                         scriptSrcList = [];
@@ -45,16 +46,18 @@ function prodHtmlTask(gulp) {
                         decodeEntities: false
                     }
                 }))
-                .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${stylePath.outputFolder}/$2$3`))
+                .pipe(replace(/(<link\s+rel="stylesheet"\s+href=")([\w-]+\.css)(">)/g, `$1../${styleOutPutPath}$2$3`))
                 .pipe(replace(/(src=")([\w-]+\.)(jpg|jpeg|png|svg|gif|JPG|JPEG|PNG|SVG|GIF)(")/g, `$1../${imagesPath}$2$3$4`))
-                .pipe(gulp.dest(`${devPath}`))
+                .pipe(flatten())
+                .pipe(gulp.dest(`${devPath}${templatePath}`))
         );
         return merge(tasks);
     });
     // 模板文件同步
     gulp.task(TASK_CONFIG.RUNTIME_FILE_SYNC, [TASK_CONFIG.RUNTIME_HTML], () => {
-        gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
-            .pipe(gulp.dest(`${runTimePath.dev}`));
+        gulp.src([`${devPath}**/*.html`, `!${devPath}${runTimePath}**/*.html`])
+            .pipe(flatten())
+            .pipe(gulp.dest(`${devPath}${runTimePath}${templatePath}`));
     });
 }
 

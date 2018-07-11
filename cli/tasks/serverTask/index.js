@@ -2,7 +2,7 @@ const nodemon = require('gulp-nodemon');
 const TASK_CONFIG = require('../../configs/task.config');
 const PATH_CONFIG = require('../../configs/path.config');
 const SERVER_CONFIG = require('../../configs/server.config');
-const { srcPath, stylePath, scriptPath, imagesPath, templatePath } = PATH_CONFIG;
+const { srcPath, cssPath, sassPath, javaScriptPath, imagesPath, templatePath } = PATH_CONFIG;
 
 function serverTask(gulp, browserSync) {
     const reload = browserSync.reload;
@@ -29,13 +29,13 @@ function serverTask(gulp, browserSync) {
         });
 
         // 监听模板文件
-        gulp.watch(`${srcPath}${templatePath.root}**/*.html`, [ TASK_CONFIG.RUNTIME_HTML, TASK_CONFIG.RUNTIME_FILE_SYNC ]).on('change', reload);
+        gulp.watch(`${srcPath}${templatePath}**/*.html`, [ TASK_CONFIG.RUNTIME_HTML, TASK_CONFIG.RUNTIME_FILE_SYNC ]).on('change', reload);
         // 监听样式文件【css】
-        gulp.watch(`${srcPath}${stylePath.css.entry}`, [ TASK_CONFIG.RUNTIME_CSS ]).on('change', reload);
+        gulp.watch(`${srcPath}${cssPath}**/*.css`, [ TASK_CONFIG.RUNTIME_CSS ]).on('change', reload);
         // 监听样式文件【sass】
-        gulp.watch(`${srcPath}${stylePath.sass.root}**/*.scss`, [ TASK_CONFIG.RUNTIME_SASS ]).on('change', reload);
+        gulp.watch(`${srcPath}${sassPath}**/*.scss`, [ TASK_CONFIG.RUNTIME_SASS ]).on('change', reload);
         // 监听脚本文件【js】
-        gulp.watch(`${srcPath}${scriptPath}**/*.js`, [ TASK_CONFIG.RUNTIME_JS ]);
+        gulp.watch(`${srcPath}${javaScriptPath}**/*.js`, [ TASK_CONFIG.RUNTIME_JS ]);
         // 监听静态资源【image】
         gulp.watch(`${srcPath}${imagesPath}**/*`, [ TASK_CONFIG.RUNTIME_IMAGE ]).on('change', reload);
     });

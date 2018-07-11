@@ -1,3 +1,5 @@
+const PATH_CONFIG = require('./path.config');
+
 const CONTROL_CONFIG = {
     need_dev: true,                                     // 是否需要使用dev环境/是否需要打包一份build文件夹
     random_file_name: true,                             // 是否需要随机文件名
@@ -36,7 +38,7 @@ const MODIFY_CSS_URLS_CONFIG = {                            // gulp-modify-css-u
     },
     BUILD: {
         modify(url, filePath) {   // 替换 css 样式文件中的 url 地址，这块需要自己配置个性化处理函数
-            return `../${PATH_CONFIG.imagesPath}${url}`;
+            return `../${PATH_CONFIG.staticPath}${url}`;
         }
     }
 };

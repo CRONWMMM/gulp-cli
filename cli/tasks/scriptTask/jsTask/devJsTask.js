@@ -19,8 +19,8 @@ function devJsTask(gulp) {
                 console.log('webpack bundle script warnings, information: ', stats.compilation.warnings);
             } else {
                 // 完成之后将 build 里的模板文件重输出到temp目录，保证两个目录的文件统一
-                gulp.src([`${devPath}**/*.html`, `!${runTimePath.dev}**/*.html`])
-                    .pipe(gulp.dest(`${runTimePath.dev}`));
+                gulp.src([`${devPath}**/*.html`, `!${devPath}${runTimePath}**/*.html`])
+                    .pipe(gulp.dest(`${devPath}${runTimePath}`));
             }
         });
     });
