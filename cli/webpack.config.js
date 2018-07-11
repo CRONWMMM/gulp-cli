@@ -12,18 +12,20 @@ const PROD_CONFIG = buildConfigs('prod')
 
 // 生成 html_plugins 和 entry 的配置函数
 function buildConfigs (env = 'dev') {
-    const viewsPath = path.resolve(__dirname, '../', srcPath, templatePath)
+    const viewsPath = resolve(srcPath, templatePath)
     const htmlDirs = fs.readdirSync(viewsPath)
 	const envPath = env === 'dev' ? devPath : prodPath
     let HTML_PLUGINS = []		// html_plugins
     let ENTRY = {}				// entry
 	htmlDirs.map(page => {
 	    page = page.split('.')[0]
-        ENTRY[page] = path.resolve(`${srcPath}${javaScriptPath}`, `${page}.js`)
+        // 配置入口信息
+        ENTRY[page] = resolve(`${srcPath}${javaScriptPath}`, `${page}.js`)
+        // 配置出口信息
         HTML_PLUGINS.push({
-            filename: resolve(`${envPath}${templatePath}` + `${page}.html`),
+            filename: resolve(`${envPath}${templatePath}`, `${page}.html`),
             // 没有template的话，webpack会自动生成一份新的html文件
-            template: resolve(`${envPath}${runTimePath}${templatePath}` + `${page}.html`),
+            template: resolve(`${envPath}${runTimePath}${templatePath}`, `${page}.html`),
             inject: true,
             chunks: [page,'vendor','manifest'],
             // necessary to consistently work with multiple chunks via CommonsChunkPlugin
@@ -39,9 +41,9 @@ function buildConfigs (env = 'dev') {
 module.exports = {
 	DEV: {
         OUTPUT: {
-			// path: resolve('build/js'),
             path: resolve(`${devPath}${javaScriptPath}`),
-			filename: '[name].[chunkhash].js'
+			filename: '[name].[chunkhash].js',
+            publicPath: `/${javaScriptPath}`,
 		},
         ENTRY: DEV_CONFIG.ENTRY,
         HTML_PLUGINS: DEV_CONFIG.HTML_PLUGINS,
@@ -50,7 +52,8 @@ module.exports = {
     BUILD: {
 		OUTPUT: {
 			path: resolve(`${prodPath}${javaScriptPath}`),
-			filename: '[name].[chunkhash].js'
+			filename: '[name].[chunkhash].js',
+            publicPath: `/${javaScriptPath}`,
 		},
         ENTRY: PROD_CONFIG.ENTRY,
         HTML_PLUGINS: PROD_CONFIG.HTML_PLUGINS,

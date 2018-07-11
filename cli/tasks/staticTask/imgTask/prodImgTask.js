@@ -8,7 +8,7 @@ const { srcPath, prodPath, staticPath, imagesPath } = PATH_CONFIG;
 
 function prodImgTask(gulp) {
     /* image 任务 */
-    gulp.task(TASK_CONFIG.BUILD_IMAGE, () => {
+    gulp.task(TASK_CONFIG.BUILD_IMAGE, [TASK_CONFIG.BUILD_CLEAN], () => {
         return gulp.src(`${srcPath}${imagesPath}`)
                     .pipe(imagemin({
                         progressive: true,// 无损压缩JPG图片

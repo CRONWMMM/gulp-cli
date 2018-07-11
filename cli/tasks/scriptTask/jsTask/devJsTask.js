@@ -1,5 +1,3 @@
-const sass = require('gulp-sass');
-const merge = require('merge-stream');
 const webpack = require('webpack');
 const WEBPACK_DEV_CONFIG = require('../../../webpack.dev.conf.js');
 const TASK_CONFIG = require('../../../configs/task.config');

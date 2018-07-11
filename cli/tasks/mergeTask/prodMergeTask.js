@@ -9,11 +9,11 @@ function prodMergeTask(gulp) {
                 [
                     TASK_CONFIG.BUILD_CLEAN,
                     TASK_CONFIG.BUILD_FONTS,
+                    TASK_CONFIG.BUILD_IMAGE,
                     TASK_CONFIG.BUILD_CSS,
                     TASK_CONFIG.BUILD_SASS,
                     TASK_CONFIG.BUILD_HTML,
                     TASK_CONFIG.BUILD_JS,
-                    TASK_CONFIG.BUILD_IMAGE
                 ],
                 () => {
                     gulp.src([`${prodPath}${runTimePath}`], {read: false})

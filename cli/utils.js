@@ -19,15 +19,15 @@ function getFolders(dir) {
 
 /**
  * 绝对路径拼接
- * @param dir  {String}   相对路径字符串
+ * @param dirList  {Array}   相对路径字符串组成的数组
  */
-function resolve(dir) {
+function resolve(...dirList) {
     const OS_TYPE = process.platform
     // 这块要根据操作系统分别处理，暂时没有找到更好方法
     if (OS_TYPE.includes('win')) {
-        return path.resolve(__dirname, `../${dir}`).replace(/\\/g, '\\\\')
+        return path.resolve(__dirname, '../', ...dirList).replace(/\\/g, '\\\\')
     } else {
-        return path.resolve(__dirname, `../${dir}`)
+        return path.resolve(__dirname, '../', ...dirList)
     }
 }
 
