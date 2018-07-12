@@ -7,7 +7,7 @@ const { srcPath, templatePath, prodPath, styleOutPutPath, imagesPath, revPath, r
 function prodHtmlTask(gulp) {
     /* html 任务 */
     // 通过样式映射表修改html文件上引用的css文件路径
-    gulp.task(TASK_CONFIG.BUILD_HTML, [TASK_CONFIG.BUILD_CLEAN], () => {
+    gulp.task(TASK_CONFIG.BUILD_HTML, [TASK_CONFIG.BUILD_CLEAN, TASK_CONFIG.BUILD_CSS, TASK_CONFIG.BUILD_SASS], () => {
         return gulp.src([`${revPath}**/*.json`, `${srcPath}${templatePath}**/*.html`])
             .pipe(revCollector())   // 替换静态资源MD5文件名
             // 替换link文件的href引用地址

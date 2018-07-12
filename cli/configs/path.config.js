@@ -1,6 +1,6 @@
 module.exports = {
     /* Basic file path start */
-    serverPath: 'server/',                                  // 服务器路径
+    serverPath: 'server/server.js',                         // 服务器文件路径
     libPath: '',                                            // 依赖库路径
     srcPath: 'src/',                                        // 源码路径
     devPath: 'build/',                                      // 开发环境

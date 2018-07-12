@@ -8,8 +8,8 @@ const router = new Router();
 const port = 8000;
 
 // configs
-const viewsPath = '/build/views';
-const staticPath = '/build';
+const viewsPath = '../build/views';
+const staticPath = '../build';
 
 // template render
 app.use(koaViews(path.join(__dirname, viewsPath), {

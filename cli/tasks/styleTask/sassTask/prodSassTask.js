@@ -11,7 +11,7 @@ const { srcPath, prodPath, sassPath, styleOutPutPath, revPath } = PATH_CONFIG;
 
 function prodSassTask(gulp) {
     /* sass 任务 */
-    gulp.task(TASK_CONFIG.BUILD_SASS, [TASK_CONFIG.BUILD_CLEAN], () => {
+    gulp.task(TASK_CONFIG.BUILD_SASS, [TASK_CONFIG.BUILD_CLEAN, TASK_CONFIG.BUILD_CSS], () => {
         return gulp.src(`${srcPath}${sassPath}*.scss`)
             .pipe(sass().on('error', sass.logError))  // sass 文件编译
             .pipe(base64(BASE64_CONFIG.BUILD))  // base64压缩小图片
@@ -21,7 +21,7 @@ function prodSassTask(gulp) {
             .pipe(flatten())
             .pipe(gulp.dest(`${prodPath}${styleOutPutPath}`))
             .pipe(rev.manifest())   // 生成JSON的映射表
-            .pipe(gulp.dest(`${revPath}`));  // 装填JSON映射表
+            .pipe(gulp.dest(`${revPath}sass`));  // 装填JSON映射表
     });
 }
 

@@ -2,7 +2,7 @@ const nodemon = require('gulp-nodemon');
 const TASK_CONFIG = require('../../configs/task.config');
 const PATH_CONFIG = require('../../configs/path.config');
 const SERVER_CONFIG = require('../../configs/server.config');
-const { srcPath, cssPath, sassPath, javaScriptPath, imagesPath, templatePath } = PATH_CONFIG;
+const { serverPath, srcPath, cssPath, sassPath, javaScriptPath, imagesPath, templatePath } = PATH_CONFIG;
 
 function serverTask(gulp, browserSync) {
     const reload = browserSync.reload;
@@ -11,7 +11,7 @@ function serverTask(gulp, browserSync) {
     gulp.task(TASK_CONFIG.DEV_NODEMON, [TASK_CONFIG.DEV_CLEAN, TASK_CONFIG.DEV_CSS, TASK_CONFIG.DEV_SASS, TASK_CONFIG.DEV_HTML, TASK_CONFIG.DEV_JS, TASK_CONFIG.DEV_IMAGE], (cb) => {
         let started = false;
         return nodemon({
-            script: 'server.js'
+            script: serverPath
         }).on('start', () => {
             if (!started) {
                 cb();
