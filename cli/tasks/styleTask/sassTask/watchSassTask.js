@@ -12,7 +12,7 @@ const { srcPath, devPath, sassPath, styleOutPutPath } = PATH_CONFIG;
 function prodSassTask(gulp) {
     // sass 任务
     gulp.task(TASK_CONFIG.RUNTIME_SASS, () => {
-        return gulp.src(`${srcPath}${sassPath}**/*.scss`)
+        return gulp.src(`${srcPath}${sassPath}*.scss`)
                     .pipe(plumber({
                         errorHandler(error) {
                             console.log(error)

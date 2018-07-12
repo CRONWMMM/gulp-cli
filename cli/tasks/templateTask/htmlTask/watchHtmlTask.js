@@ -19,8 +19,7 @@ function prodHtmlTask(gulp) {
                         scriptSrcList = [];
                         $('script').each(function() {
                             let $script = $(this),
-                                // reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
-                                reg = /.+\.js$/g,
+                                reg = /^(\.\/|\.\.\/|\/)[\W\w\s]+$/g,
                                 src = $script.attr('src');
                             if (reg.test(src)) scriptSrcList.push(src);
                         });

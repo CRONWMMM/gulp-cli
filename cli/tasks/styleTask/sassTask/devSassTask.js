@@ -11,7 +11,7 @@ const { srcPath, sassPath, styleOutPutPath, devPath } = PATH_CONFIG
 function devSassTask(gulp) {
     /* sass 任务 */
     gulp.task(TASK_CONFIG.DEV_SASS, [TASK_CONFIG.DEV_CLEAN], () => {
-        return gulp.src(`${srcPath}${sassPath}**/*.scss`)
+        return gulp.src(`${srcPath}${sassPath}*.scss`)
                     .pipe(sass().on('error', sass.logError))  // sass 文件编译
                     .pipe(autoPrefixer(AUTO_PREFIXER_CONFIG.DEV))   // css 样式前缀
                     .pipe(flatten())
