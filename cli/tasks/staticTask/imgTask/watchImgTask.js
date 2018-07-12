@@ -5,7 +5,7 @@ const merge = require('merge-stream');
 const imagemin = require('gulp-imagemin');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { devPath, staticPath, imagesPath } = PATH_CONFIG;
+const { srcPath, devPath, staticPath, imagesPath } = PATH_CONFIG;
 
 
 function watchImgTask(gulp) {

@@ -1,7 +1,7 @@
 const flatten = require('gulp-flatten');
 const TASK_CONFIG = require('../../../configs/task.config');
 const PATH_CONFIG = require('../../../configs/path.config');
-const { srcPath, fontsPath, staticPath, devPath } = PATH_CONFIG
+const { srcPath, fontsPath, staticPath, devPath } = PATH_CONFIG;
 
 function watchFontTask(gulp) {
     /* fonts 任务 */

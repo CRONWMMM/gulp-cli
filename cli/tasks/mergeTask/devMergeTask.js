@@ -13,7 +13,7 @@ function devMergeTask(gulp) {
                     TASK_CONFIG.DEV_IMAGE,
                     TASK_CONFIG.DEV_FONTS,
                     TASK_CONFIG.DEV_NODEMON,
-                    TASK_CONFIG.DEV_BROWSER_SYNC
+                    TASK_CONFIG.DEV_BROWSER_SYNC,
                 ], () => {});
 
 }
