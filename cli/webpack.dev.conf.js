@@ -29,7 +29,11 @@ module.exports = {
                     }
                 },
         		include: [resolve('src')]
-			}
+			},
+            {
+                test: /\.html$/,
+                loader: 'html-loader'
+            }
 		]
 	},
     // cheap-module-eval-source-map is faster for development

@@ -28,7 +28,11 @@ module.exports = {
                     }
                 },
         		include: [resolve('src')]
-			}
+			},
+            {
+                test: /\.html$/,
+                loader: 'html-loader'
+            }
 		]
 	},
     devtool: BUILD.PRODUCTION_SOURCEMAP ? BUILD.DEVTOOL : false,
