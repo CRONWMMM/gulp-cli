@@ -1,7 +1,4 @@
-const clean = require('gulp-clean');
 const TASK_CONFIG = require('../../configs/task.config');
-const PATH_CONFIG = require('../../configs/path.config');
-const { prodPath, runTimePath } = PATH_CONFIG;
 
 function prodMergeTask(gulp) {
     /* build 合并构建任务 */
@@ -16,8 +13,7 @@ function prodMergeTask(gulp) {
                     TASK_CONFIG.BUILD_JS,
                 ],
                 () => {
-                    gulp.src([`${prodPath}${runTimePath}`], {read: false})
-                        .pipe(clean());
+
                 }
             );
 }

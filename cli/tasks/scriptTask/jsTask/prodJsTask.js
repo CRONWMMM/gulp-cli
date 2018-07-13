@@ -1,7 +1,9 @@
+const clean = require('gulp-clean');
 const webpack = require('webpack');
 const WEBPACK_PROD_CONFIG = require('../../../webpack.prod.conf.js');
 const TASK_CONFIG = require('../../../configs/task.config');
-
+const PATH_CONFIG = require('../../../configs/path.config');
+const { prodPath, runTimePath, revPath } = PATH_CONFIG;
 
 
 function prodJsTask(gulp) {
@@ -14,6 +16,10 @@ function prodJsTask(gulp) {
             } else if (stats.hasWarnings()) {   // webpack 打包警告信息
                 // Handle warnings here
                 console.log('webpack bundle script warnings, information: ', stats.compilation.warnings);
+            } else {
+                // 全部编译成功就删除无用目录
+                gulp.src([`${prodPath}${runTimePath}`, revPath], {read: false})
+                    .pipe(clean());
             }
         });
     });
